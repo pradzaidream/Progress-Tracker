@@ -110,6 +110,67 @@
   .legend-note .g{color:var(--goal);}
   .legend-note .a{color:var(--actual);}
   canvas{width:100%;display:block;}
+
+  /* ---------- HYROX PLAN ---------- */
+  .plan-hero{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:16px 18px;margin-bottom:18px;
+  }
+  .plan-hero-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+  .plan-hero-num{font-weight:800;font-size:22px;}
+  .plan-hero-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;}
+  .plan-rail{height:10px;border-radius:6px;background:var(--track);border:1px solid var(--border);overflow:hidden;}
+  .plan-rail-fill{height:100%;background:linear-gradient(90deg,var(--actual),#1fae87);width:0%;transition:width .4s ease;}
+
+  .week-block{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+  .week-block summary{
+    list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;
+    align-items:center;font-weight:700;font-size:14px;flex-wrap:wrap;gap:8px;
+  }
+  .week-block summary::-webkit-details-marker{display:none;}
+  .week-block summary .wk-title{color:var(--text);}
+  .week-block summary .wk-range{color:var(--muted);font-weight:400;font-size:12px;margin-left:8px;}
+  .week-block summary .wk-count{
+    font-size:11px;color:var(--muted);background:var(--track);border:1px solid var(--border);
+    padding:3px 9px;border-radius:20px;
+  }
+  .week-body{padding:0 12px 12px;}
+
+  .day-row{
+    border-top:1px solid var(--border);
+    padding:10px 4px;
+  }
+  .day-row.race-day{background:rgba(232,163,61,0.08);border-radius:8px;padding:10px 8px;}
+  .day-row-top{display:flex;align-items:flex-start;gap:10px;}
+  .day-check{width:20px;height:20px;margin-top:2px;accent-color:var(--actual);flex-shrink:0;}
+  .day-info{flex:1;min-width:0;}
+  .day-date-line{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .day-title{font-size:14px;font-weight:600;margin-top:2px;}
+  .day-row.done .day-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--actual);}
+  .tag-badge{
+    font-size:10px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:20px;text-transform:uppercase;
+  }
+  .tag-R{background:rgba(140,160,196,0.15);color:var(--muted);}
+  .tag-M{background:rgba(232,163,61,0.15);color:var(--goal);}
+  .tag-H{background:rgba(240,101,79,0.15);color:var(--behind);}
+  .tag-X{background:rgba(232,163,61,0.25);color:var(--goal);font-weight:800;}
+  .day-detail{margin-top:8px;margin-left:30px;}
+  .day-detail summary{
+    cursor:pointer;font-size:12px;color:var(--muted);list-style:none;
+  }
+  .day-detail summary::-webkit-details-marker{display:none;}
+  .day-detail summary::before{content:'▸ ';}
+  .day-detail[open] summary::before{content:'▾ ';}
+  .day-detail-body{
+    font-size:12.5px;color:var(--text);line-height:1.55;padding:10px 0 4px;
+  }
+  .day-detail-body .row{margin-bottom:6px;}
+  .day-detail-body .row b{color:var(--muted);font-weight:600;display:inline-block;min-width:78px;}
+  .day-note{
+    width:100%;margin-top:8px;background:var(--track);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;resize:vertical;min-height:36px;
+  }
+  .day-note::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
@@ -135,6 +196,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="weight">Weight Tracker</button>
     <button class="tab-btn" data-tab="inch">Inch Tracker</button>
+    <button class="tab-btn" data-tab="hyrox">HYROX Plan</button>
   </div>
 
   <div class="panel active" id="panel-weight">
@@ -181,6 +243,24 @@
       </div>
       <canvas id="inch-chart" width="900" height="260"></canvas>
     </div>
+  </div>
+
+  <div class="panel" id="panel-hyrox">
+    <div class="section-head">
+      <div class="section-title">HYROX Performance Plan</div>
+      <div class="section-actions">
+        <span><span class="save-dot" id="save-dot-hyrox"></span>saved</span>
+        <button class="btn" id="reset-hyrox">Reset progress</button>
+      </div>
+    </div>
+    <div class="plan-hero">
+      <div class="plan-hero-top">
+        <span class="plan-hero-label">Aug 3 — Nov 22, 2026 · 16 weeks</span>
+        <span><span class="plan-hero-num" id="hyrox-count">0</span><span style="color:var(--muted);font-size:13px;"> / 112 sessions logged</span></span>
+      </div>
+      <div class="plan-rail"><div class="plan-rail-fill" id="hyrox-rail-fill"></div></div>
+    </div>
+    <div id="hyrox-weeks"></div>
   </div>
 
 </div>
@@ -436,6 +516,276 @@ try {
     ]);
   }
 
+  // ---------- HYROX PLAN DATA ----------
+  var WU_STD = '5–8 min: leg swings, 10 squats, 8 reverse lunges/side, 10 glute bridges, 20 sec high knees. Add 5 min easy jog before quality runs.';
+  var WU_CLASS = 'Class-specific warm-up or 3–5 min gentle mobility; no separate long warm-up required.';
+  var CD_STD = '8–12 min: 2 min easy walk, hip flexor 45 sec/side, calf straight-knee 30 sec/side, calf bent-knee 30 sec/side, figure-4 45 sec/side, slow breathing.';
+  var CD_UPPER = '8 min: doorway chest stretch, lat child\u2019s pose, thoracic rotation and slow breathing.';
+  var CD_NONE = 'None required.';
+  var RC_STD = 'Red light 10–15 min optional. Prioritize meal, hydration and sleep.';
+  var RC_COMP = 'Compression 20–30 min later; red light optional. Cryotherapy only if soreness is limiting and not immediately after strength.';
+  var RC_REFORM = 'No additional hard conditioning. Sauna 10–15 min only if well hydrated.';
+  var FU_N = 'Normal meal pattern; 25–35 g protein within 1–2 hours.';
+  var FU_Q = '60–90 min pre: banana + Greek yogurt, toast + honey, or similar 30–50 g carbohydrate. Post: 30–40 g protein plus 50–80 g carbohydrate. Electrolytes for sweaty or >60 min sessions.';
+  var SH_STABLE = 'Stable training shoe; Reform may be grip socks per studio rules.';
+  var SH_RUN = 'PUMA Velocity NITRO 4 / stable trainer.';
+  var SH_RACE_P = 'PUMA Deviate NITRO Elite 4 HYROX (race-shoe practice).';
+  var SH_RACE = 'PUMA Deviate NITRO Elite 4 HYROX.';
+  var SE_OPT = 'Samsung Watch optional; Polar H10 not necessary.';
+  var SE_FULL = 'Polar H10 + Samsung Watch.';
+  var SE_LOCK = 'Polar H10 + Samsung Watch; lock screen and disable unnecessary notifications.';
+  var TL4 = 'Tonal lower strength: Goblet or front squat 4 \u00d7 6 @ RPE 7\u20138 (2\u20133 min); Romanian deadlift 4 \u00d7 8 @ RPE 7\u20138 (2 min); rear-foot-elevated split squat 3 \u00d7 8/leg @ RPE 7 (90 sec); standing calf raise 3 \u00d7 12 (60 sec); Pallof press 3 \u00d7 10/side.';
+  var TL3 = 'Tonal lower strength: Goblet or front squat 3 \u00d7 6 @ RPE 7\u20138 (2\u20133 min); Romanian deadlift 3 \u00d7 8 @ RPE 7\u20138 (2 min); rear-foot-elevated split squat 3 \u00d7 8/leg @ RPE 7 (90 sec); standing calf raise 3 \u00d7 12 (60 sec); Pallof press 3 \u00d7 10/side.';
+  var TU4 = 'Tonal upper strength: Bench press 4 \u00d7 6 @ RPE 7\u20138 (2\u20133 min); neutral-grip lat pulldown 4 \u00d7 8 @ RPE 7\u20138 (2 min); standing overhead press 3 \u00d7 8 @ RPE 7 (90 sec); seated row 3 \u00d7 10 @ RPE 7 (90 sec); triceps pressdown 2 \u00d7 12; dead bug 3 \u00d7 8/side.';
+  var TU3 = 'Tonal upper strength: Bench press 3 \u00d7 6 @ RPE 7\u20138 (2\u20133 min); neutral-grip lat pulldown 3 \u00d7 8 @ RPE 7\u20138 (2 min); standing overhead press 3 \u00d7 8 @ RPE 7 (90 sec); seated row 3 \u00d7 10 @ RPE 7 (90 sec); triceps pressdown 2 \u00d7 12; dead bug 3 \u00d7 8/side.';
+  var REFORM_W = 'Club Studio Reform (45 min). Keep class at RPE 5\u20136; prioritize control, breathing, neutral pelvis, glute engagement and smooth range. Avoid chasing shaking/failure. If the class becomes leg-dominant, reduce spring/resistance or range.';
+  var CS4_W = 'CS4 class replaces the week\u2019s programmed hard conditioning. Target RPE 7\u20138, not a class win. Use controlled loads, step-ups instead of reckless box jumps, and stop 1\u20132 reps before form failure. No extra intervals or heavy legs the same day.';
+  var BENCH_5K = 'Benchmark: 5 km even-effort test after 12 min warm-up. Wear Polar H10 and Samsung Watch. Record time, average/peak HR, mile splits and RPE. Do not add strength afterward.';
+  var REST_W = 'Full rest. Optional 20\u201330 min easy walk and 8 min gentle mobility only.';
+  function HYROX(rounds,dist){ return 'Club Studio HYROX skill session, '+rounds+' rounds: '+dist+' run at RPE 6; 250 m SkiErg; 12.5 m sled push; 12.5 m sled pull; 10 burpee broad jumps; 15 wall balls. Rest 2 min between rounds. Use race-standard technique but begin sleds at 70\u201380% of race load and progress only when posture stays strong. Finish 2 \u00d7 100 m farmer carry and 2 \u00d7 25 m sandbag lunges.'; }
+  function EASY(mph){ return 'Easy run 30\u201345 min at RPE 3\u20134. Start around '+mph+' mph (1% incline); stay conversational and slow down if HR drifts. Finish with 4 \u00d7 15 sec relaxed strides only if legs feel fresh.'; }
+  function LONG(min,mph){ return 'Long aerobic run '+min+' min at RPE 3\u20134, approximately '+mph+' mph. Take 30\u201340 g carbohydrate/hour once duration exceeds 70 min.'; }
+
+  function D(date,dow,t,g,sh,se,wu,w,cd,rc,fu){
+    return {d:date,dow:dow,t:t,g:g,sh:sh,se:se,wu:wu,w:w,cd:cd,rc:rc,fu:fu};
+  }
+
+  var HYROX_WEEKS = [
+  {n:1, range:'Aug 3 \u2013 Aug 9', days:[
+    D('2026-08-03','Mon','Recovery reset','R',SH_STABLE,SE_OPT,WU_CLASS,'20\u201335 min easy walk or bike at RPE 2\u20133, then 10\u201315 min mobility. No loaded leg work.',CD_STD,RC_STD,FU_N),
+    D('2026-08-04','Tue','Reform + easy mobility','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-08-05','Wed','Run re-entry intervals','H',SH_RUN,SE_FULL,WU_STD,'Warm up 8 min. 6 \u00d7 2 min at 6.5\u20136.8 mph, 2 min easy at 4.5\u20135.0 mph. RPE 7. Finish with 4 \u00d7 20 sec SkiErg technique pickups.',CD_STD,RC_STD,FU_Q),
+    D('2026-08-06','Thu','Tonal upper + core','M',SH_STABLE,SE_OPT,WU_STD,TU3,CD_UPPER,RC_STD,FU_N),
+    D('2026-08-07','Fri','HYROX technique','H',SH_RUN,SE_FULL,WU_STD,HYROX(3,'600 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-08-08','Sat','Easy aerobic run','R',SH_RUN,SE_FULL,WU_STD,EASY('5.2'),CD_STD,RC_STD,FU_N),
+    D('2026-08-09','Sun','Long easy run','M',SH_RUN,SE_FULL,WU_STD,LONG(50,'5.2\u20135.4'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:2, range:'Aug 10 \u2013 Aug 16', days:[
+    D('2026-08-10','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-08-11','Tue','Run intervals + Ski','H',SH_RUN,SE_FULL,WU_STD,'Warm up 8 min. 6 \u00d7 2 min at 6.5\u20136.8 mph, 2 min easy at 4.5\u20135.0 mph. RPE 7. Finish with 4 \u00d7 20 sec SkiErg technique pickups.',CD_STD,RC_STD,FU_Q),
+    D('2026-08-12','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-08-13','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(3,'600 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-08-14','Fri','Tonal upper + easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-08-15','Sat','Compromised running','H',SH_RUN,SE_FULL,WU_STD,'3 rounds: 800 m run at 6.3\u20136.6 mph; 500 m row; 20 m farmer carry; 15 wall balls. Rest 2 min. RPE cap 7.',CD_STD,RC_COMP,FU_Q),
+    D('2026-08-16','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(55,'5.2\u20135.4'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:3, range:'Aug 17 \u2013 Aug 23', days:[
+    D('2026-08-17','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-08-18','Tue','Tempo run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 24 min continuous at RPE 6\u20137 around 6.2\u20136.4 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-08-19','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-08-20','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(3,'600 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-08-21','Fri','Tonal upper + row','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-08-22','Sat','CS4 replaces conditioning','H',SH_RUN,SE_FULL,WU_STD,CS4_W,CD_STD,RC_COMP,FU_Q),
+    D('2026-08-23','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(60,'5.3\u20135.5'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:4, range:'Aug 24 \u2013 Aug 30', days:[
+    D('2026-08-24','Mon','Deload Tonal lower','M',SH_STABLE,SE_OPT,WU_STD,TL3,CD_STD,RC_STD,FU_N),
+    D('2026-08-25','Tue','5K benchmark','H',SH_RACE_P,SE_FULL,WU_STD,BENCH_5K,CD_STD,RC_COMP,FU_Q),
+    D('2026-08-26','Wed','Reform recovery','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-08-27','Thu','Light HYROX technique','H',SH_RUN,SE_FULL,WU_STD,HYROX(4,'600 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-08-28','Fri','Deload Tonal upper','M',SH_STABLE,SE_OPT,WU_STD,TU3,CD_UPPER,RC_STD,FU_N),
+    D('2026-08-29','Sat','Easy run','R',SH_RUN,SE_FULL,WU_STD,EASY('5.4'),CD_STD,RC_STD,FU_N),
+    D('2026-08-30','Sun','Rest','R',SH_STABLE,SE_OPT,WU_CLASS,REST_W,CD_NONE,RC_STD,FU_N)
+  ]},
+  {n:5, range:'Aug 31 \u2013 Sep 6', days:[
+    D('2026-08-31','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-09-01','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 28 min continuous at RPE 6\u20137 around 6.3\u20136.5 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-09-02','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-09-03','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(4,'800 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-09-04','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-09-05','Sat','HYROX compromised session','H',SH_RUN,SE_FULL,WU_STD,'4 rounds: 1 km run at 6.5\u20136.8 mph; alternate 500 m SkiErg / 500 m row; 20 m sandbag lunges; 20 wall balls. Rest 90 sec.',CD_STD,RC_COMP,FU_Q),
+    D('2026-09-06','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(70,'5.4\u20135.6'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:6, range:'Sep 7 \u2013 Sep 13', days:[
+    D('2026-09-07','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-09-08','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'Warm up 10 min. 5 \u00d7 1 km at 6.9\u20137.2 mph, 2 min easy jog. RPE 7.5\u20138; never sprint the last rep. Then 3 \u00d7 300 m SkiErg, 75 sec rest.',CD_STD,RC_STD,FU_Q),
+    D('2026-09-09','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-09-10','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(4,'800 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-09-11','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-09-12','Sat','CS4 replaces conditioning','H',SH_RUN,SE_FULL,WU_STD,CS4_W,CD_STD,RC_COMP,FU_Q),
+    D('2026-09-13','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(75,'5.4\u20135.6'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:7, range:'Sep 14 \u2013 Sep 20', days:[
+    D('2026-09-14','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-09-15','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 32 min continuous at RPE 6\u20137 around 6.4\u20136.6 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-09-16','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-09-17','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'800 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-09-18','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-09-19','Sat','HYROX compromised session','H',SH_RUN,SE_FULL,WU_STD,'5 rounds: 1 km run at 6.6\u20137.0 mph; 12.5 m sled push + 12.5 m pull; 10 burpee broad jumps; 20 wall balls. Rest 90 sec.',CD_STD,RC_COMP,FU_Q),
+    D('2026-09-20','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.4\u20135.6'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:8, range:'Sep 21 \u2013 Sep 27', days:[
+    D('2026-09-21','Mon','Deload Tonal lower','M',SH_STABLE,SE_OPT,WU_STD,TL3,CD_STD,RC_STD,FU_N),
+    D('2026-09-22','Tue','5K or 1K benchmark','H',SH_RACE_P,SE_FULL,WU_STD,BENCH_5K,CD_STD,RC_COMP,FU_Q),
+    D('2026-09-23','Wed','Reform recovery','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-09-24','Thu','Light HYROX technique','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'800 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-09-25','Fri','Deload Tonal upper','M',SH_STABLE,SE_OPT,WU_STD,TU3,CD_UPPER,RC_STD,FU_N),
+    D('2026-09-26','Sat','Easy run','R',SH_RUN,SE_FULL,WU_STD,EASY('5.5'),CD_STD,RC_STD,FU_N),
+    D('2026-09-27','Sun','Rest','R',SH_STABLE,SE_OPT,WU_CLASS,REST_W,CD_NONE,RC_STD,FU_N)
+  ]},
+  {n:9, range:'Sep 28 \u2013 Oct 4', days:[
+    D('2026-09-28','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-09-29','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 35 min continuous at RPE 6\u20137 around 6.5\u20136.7 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-09-30','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-10-01','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-10-02','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-10-03','Sat','HYROX compromised session','H',SH_RACE_P,SE_FULL,WU_STD,'5 rounds: 1 km run at 6.6\u20137.0 mph; 12.5 m sled push + 12.5 m pull; 10 burpee broad jumps; 20 wall balls. Rest 90 sec.',CD_STD,RC_COMP,FU_Q),
+    D('2026-10-04','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.5\u20135.7'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:10, range:'Oct 5 \u2013 Oct 11', days:[
+    D('2026-10-05','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-10-06','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'Warm up 12 min. 6 \u00d7 1 km at 7.0\u20137.4 mph, 90 sec easy jog. Hold even splits. Then 4 \u00d7 200 m SkiErg brisk but technically clean.',CD_STD,RC_STD,FU_Q),
+    D('2026-10-07','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-10-08','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-10-09','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-10-10','Sat','CS4 replaces conditioning','H',SH_RUN,SE_FULL,WU_STD,CS4_W,CD_STD,RC_COMP,FU_Q),
+    D('2026-10-11','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.6\u20135.8'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:11, range:'Oct 12 \u2013 Oct 18', days:[
+    D('2026-10-12','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-10-13','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 35 min continuous at RPE 6\u20137 around 6.6\u20136.8 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-10-14','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-10-15','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-10-16','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-10-17','Sat','HYROX compromised session','H',SH_RUN,SE_FULL,WU_STD,'6 rounds: 1 km run at projected race pace; rotate Ski 500 m, sled push, sled pull, row 500 m, farmer carry 100 m, lunges 50 m; finish 40 wall balls. Controlled race rehearsal, RPE 8 cap.',CD_STD,RC_COMP,FU_Q),
+    D('2026-10-18','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.6\u20135.8'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:12, range:'Oct 19 \u2013 Oct 25', days:[
+    D('2026-10-19','Mon','Deload Tonal lower','M',SH_STABLE,SE_OPT,WU_STD,TL3,CD_STD,RC_STD,FU_N),
+    D('2026-10-20','Tue','5K or 1K benchmark','H',SH_RACE_P,SE_FULL,WU_STD,BENCH_5K,CD_STD,RC_COMP,FU_Q),
+    D('2026-10-21','Wed','Reform recovery','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-10-22','Thu','Light HYROX technique','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-10-23','Fri','Deload Tonal upper','M',SH_STABLE,SE_OPT,WU_STD,TU3,CD_UPPER,RC_STD,FU_N),
+    D('2026-10-24','Sat','Easy run','R',SH_RUN,SE_FULL,WU_STD,EASY('5.8'),CD_STD,RC_STD,FU_N),
+    D('2026-10-25','Sun','Rest','R',SH_STABLE,SE_OPT,WU_CLASS,REST_W,CD_NONE,RC_STD,FU_N)
+  ]},
+  {n:13, range:'Oct 26 \u2013 Nov 1', days:[
+    D('2026-10-26','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-10-27','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'10 min easy, then 35 min continuous at RPE 6\u20137 around 6.7\u20136.9 mph, then 8 min easy. You should be able to speak only short phrases.',CD_STD,RC_STD,FU_Q),
+    D('2026-10-28','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-10-29','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-10-30','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-10-31','Sat','HYROX compromised session','H',SH_RUN,SE_FULL,WU_STD,'Race-specific 75\u201385% simulation: 6 \u00d7 1 km runs with six stations, using race loads. No final all-out effort. Practice transitions, chalk, breathing and wall-ball breaks.',CD_STD,RC_COMP,FU_Q),
+    D('2026-11-01','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.7\u20135.9'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:14, range:'Nov 2 \u2013 Nov 8', days:[
+    D('2026-11-02','Mon','Tonal lower strength','M',SH_STABLE,SE_OPT,WU_STD,TL4,CD_STD,RC_STD,FU_N),
+    D('2026-11-03','Tue','Quality run','H',SH_RUN,SE_FULL,WU_STD,'Sharpener: 5 \u00d7 600 m at 7.2\u20137.6 mph, 90 sec walk/jog. Stop if mechanics deteriorate.',CD_STD,RC_STD,FU_Q),
+    D('2026-11-04','Wed','Reform Pilates','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-11-05','Thu','HYROX stations','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-11-06','Fri','Tonal upper + short easy cardio','M',SH_STABLE,SE_OPT,WU_STD,TU4,CD_UPPER,RC_STD,FU_N),
+    D('2026-11-07','Sat','HYROX compromised session','H',SH_RACE_P,SE_FULL,WU_STD,'Race-specific 75\u201385% simulation: 6 \u00d7 1 km runs with six stations, using race loads. No final all-out effort. Practice transitions, chalk, breathing and wall-ball breaks.',CD_STD,RC_COMP,FU_Q),
+    D('2026-11-08','Sun','Long aerobic run','M',SH_RUN,SE_FULL,WU_STD,LONG(80,'5.7\u20135.9'),CD_STD,RC_COMP,FU_Q)
+  ]},
+  {n:15, range:'Nov 9 \u2013 Nov 15', days:[
+    D('2026-11-09','Mon','Light Tonal total body','M',SH_STABLE,SE_OPT,WU_STD,TL3,CD_STD,RC_STD,FU_N),
+    D('2026-11-10','Tue','Taper intervals','H',SH_RUN,SE_FULL,WU_STD,'Taper intervals: 4 \u00d7 500 m at 7.0\u20137.3 mph, 2 min easy. Total session under 40 min.',CD_STD,RC_STD,FU_Q),
+    D('2026-11-11','Wed','Easy Reform','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-11-12','Thu','Short HYROX technique','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-11-13','Fri','Rest','R',SH_STABLE,SE_OPT,WU_CLASS,REST_W,CD_NONE,RC_STD,FU_N),
+    D('2026-11-14','Sat','Half HYROX rehearsal','H',SH_RUN,SE_FULL,WU_STD,'Half HYROX at 70\u201375%: 4 \u00d7 1 km plus Ski, sled push, sled pull and row. Stop while feeling sharp.',CD_STD,RC_COMP,FU_Q),
+    D('2026-11-15','Sun','Easy run','R',SH_RUN,SE_FULL,WU_STD,EASY('5.8'),CD_STD,RC_STD,FU_N)
+  ]},
+  {n:16, range:'Nov 16 \u2013 Nov 22', days:[
+    D('2026-11-16','Mon','Easy run + mobility','R',SH_RUN,SE_FULL,WU_STD,EASY('5.8'),CD_STD,RC_STD,FU_N),
+    D('2026-11-17','Tue','Race primer','H',SH_RUN,SE_FULL,WU_STD,HYROX(5,'1000 m'),CD_STD,RC_COMP,FU_Q),
+    D('2026-11-18','Wed','SOLO HYROX \u2014 RACE DAY','X',SH_RACE,SE_LOCK,WU_STD,'Warm up 20\u201325 min: 6 min easy jog, dynamic mobility, 3 \u00d7 20 sec strides, 250 m Ski, 8 wall balls and two short sled efforts. Race opening 2 km at controlled RPE 7; do not chase early runners. Use planned wall-ball breaks before failure. Cool down with 10 min walk, fluids, carbohydrates and 30\u201340 g protein.',CD_NONE,'Compression later for 20\u201330 min; no cryotherapy until fully rewarmed and hydrated.','3\u20134 hours pre-race: familiar carbohydrate-rich meal plus 25\u201335 g protein. 45\u201360 min pre: optional small banana/gel and familiar caffeine only.'),
+    D('2026-11-19','Thu','Post-race recovery','R',SH_STABLE,SE_OPT,WU_CLASS,'20\u201335 min easy walk or bike at RPE 2\u20133, then 10\u201315 min mobility. No loaded leg work.',CD_STD,RC_STD,FU_N),
+    D('2026-11-20','Fri','Very easy Reform or mobility','R',SH_STABLE,SE_OPT,WU_CLASS,REFORM_W,CD_STD,RC_REFORM,FU_N),
+    D('2026-11-21','Sat','Doubles shakeout','R',SH_RUN,SE_FULL,WU_STD,EASY('5.8'),CD_STD,RC_STD,FU_N),
+    D('2026-11-22','Sun','DOUBLES HYROX \u2014 RACE DAY','X',SH_RACE,SE_FULL,WU_STD,'Warm up as for Solo but shorter. Agree station splits before entering the venue. Stronger partner takes more sled and wall-ball volume; change before failure, not after. Runs should be smooth enough to communicate. Finish hard only after the final planned wall-ball exchange.',CD_NONE,'Walk, eat, hydrate and celebrate. No structured training Monday.','Normal breakfast 3\u20134 hours before. Sip electrolytes; optional gel 10\u201315 min pre if practiced.')
+  ]}
+  ];
+
+  var hyroxLog = {};
+  var TAG_LABEL = {R:'RECOVERY',M:'MODERATE',H:'HARD',X:'RACE'};
+
+  function hyroxCompletedCount(){
+    var c=0; HYROX_WEEKS.forEach(function(wk){ wk.days.forEach(function(d){ if(hyroxLog[d.d] && hyroxLog[d.d].done) c++; }); });
+    return c;
+  }
+
+  function renderHyroxPanel(){
+    var container = document.getElementById('hyrox-weeks');
+    container.innerHTML = '';
+    var todayIso = isoDate(new Date());
+    HYROX_WEEKS.forEach(function(wk){
+      var doneInWeek = wk.days.filter(function(d){ return hyroxLog[d.d] && hyroxLog[d.d].done; }).length;
+      var containsToday = wk.days.some(function(d){ return d.d===todayIso; });
+      var det = document.createElement('details');
+      det.className = 'week-block';
+      if(containsToday) det.open = true;
+      var summary = document.createElement('summary');
+      summary.innerHTML = '<span><span class="wk-title">Week '+wk.n+'</span><span class="wk-range">'+wk.range+'</span></span>'+
+        '<span class="wk-count" data-wkcount="'+wk.n+'">'+doneInWeek+'/'+wk.days.length+'</span>';
+      det.appendChild(summary);
+      var body = document.createElement('div');
+      body.className = 'week-body';
+      wk.days.forEach(function(day){
+        var entry = hyroxLog[day.d] || {};
+        var row = document.createElement('div');
+        row.className = 'day-row' + (entry.done ? ' done' : '') + (day.g==='X' ? ' race-day' : '');
+        var dLabel = new Date(day.d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        row.innerHTML =
+          '<div class="day-row-top">'+
+            '<input type="checkbox" class="day-check" data-date="'+day.d+'" '+(entry.done?'checked':'')+'>'+
+            '<div class="day-info">'+
+              '<div class="day-date-line">'+day.dow+' \u00b7 '+dLabel+' <span class="tag-badge tag-'+day.g+'">'+TAG_LABEL[day.g]+'</span></div>'+
+              '<div class="day-title">'+day.t+'</div>'+
+              '<details class="day-detail"><summary>Session details</summary>'+
+                '<div class="day-detail-body">'+
+                  '<div class="row"><b>Shoes</b>'+day.sh+'</div>'+
+                  '<div class="row"><b>Sensors</b>'+day.se+'</div>'+
+                  '<div class="row"><b>Warm-up</b>'+day.wu+'</div>'+
+                  '<div class="row"><b>Workout</b>'+day.w+'</div>'+
+                  '<div class="row"><b>Cooldown</b>'+day.cd+'</div>'+
+                  '<div class="row"><b>Recovery</b>'+day.rc+'</div>'+
+                  '<div class="row"><b>Fuel</b>'+day.fu+'</div>'+
+                '</div>'+
+                '<textarea class="day-note" data-date="'+day.d+'" placeholder="Notes \u2014 time, weight used, how it felt...">'+(entry.note||'')+'</textarea>'+
+              '</details>'+
+            '</div>'+
+          '</div>';
+        body.appendChild(row);
+      });
+      det.appendChild(body);
+      container.appendChild(det);
+    });
+
+    container.querySelectorAll('input.day-check').forEach(function(cb){
+      cb.addEventListener('change', function(e){
+        var k = e.target.dataset.date;
+        if(!hyroxLog[k]) hyroxLog[k] = {};
+        hyroxLog[k].done = e.target.checked;
+        saveJSON('hyrox-log', hyroxLog, document.getElementById('save-dot-hyrox'));
+        renderHyroxPanel();
+        updateHyroxHero();
+      });
+    });
+    container.querySelectorAll('textarea.day-note').forEach(function(ta){
+      ta.addEventListener('change', function(e){
+        var k = e.target.dataset.date;
+        if(!hyroxLog[k]) hyroxLog[k] = {};
+        hyroxLog[k].note = e.target.value;
+        saveJSON('hyrox-log', hyroxLog, document.getElementById('save-dot-hyrox'));
+      });
+    });
+  }
+
+  function updateHyroxHero(){
+    var total = 0; HYROX_WEEKS.forEach(function(wk){ total += wk.days.length; });
+    var done = hyroxCompletedCount();
+    document.getElementById('hyrox-count').textContent = done;
+    document.getElementById('hyrox-rail-fill').style.width = (Math.min(100,(done/total)*100))+'%';
+  }
+
+  document.getElementById('reset-hyrox').addEventListener('click', function(){
+    if(!confirm('Clear all logged HYROX plan progress and notes?')) return;
+    hyroxLog = {};
+    saveJSON('hyrox-log', hyroxLog, document.getElementById('save-dot-hyrox'));
+    renderHyroxPanel(); updateHyroxHero();
+  });
+
   // ---------- TABS ----------
   document.querySelectorAll('.tab-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -443,7 +793,8 @@ try {
       document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
       btn.classList.add('active');
       document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
-      if(btn.dataset.tab==='inch') renderInchChart(); else renderWeightChart();
+      if(btn.dataset.tab==='inch') renderInchChart();
+      else if(btn.dataset.tab==='weight') renderWeightChart();
     });
   });
 
@@ -467,11 +818,15 @@ try {
   renderInchTable();
   renderInchChart();
   renderHero();
+  renderHyroxPanel();
+  updateHyroxHero();
 
-  Promise.all([loadJSON('weight-actuals'), loadJSON('inch-actuals')]).then(function(results){
+  Promise.all([loadJSON('weight-actuals'), loadJSON('inch-actuals'), loadJSON('hyrox-log')]).then(function(results){
     weightActuals = results[0] || {};
     inchActuals = results[1] || {};
+    hyroxLog = results[2] || {};
     renderWeightTable(); renderWeightChart(); renderInchTable(); renderInchChart(); renderHero();
+    renderHyroxPanel(); updateHyroxHero();
   }).catch(function(e){
     document.getElementById('weight-warn').innerHTML = '<div class="warn">Saved data could not be loaded this time — entries below start blank.</div>';
   });
