@@ -519,15 +519,36 @@ const $ = id => document.getElementById(id);
 const scrollTo_ = el => { try{ el && el.scrollIntoView && el.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){} };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+const SIM = "sim";
+const SIM_SESSION = {
+  t:"Full HYROX simulation", f:"8 runs, 8 stations, no stopping", items:[
+  ["Warm-up","10 min easy jog, band shoulder work, 15 wall balls, 1 short sled push"],
+  ["Run 1 + SkiErg","1 km, then 1000 m ski"],
+  ["Run 2 + Sled push","1 km, then 50 m at race weight (Open 152 kg loaded, Pro 202 kg)"],
+  ["Run 3 + Sled pull","1 km, then 50 m (Open 103 kg, Pro 153 kg)"],
+  ["Run 4 + Burpee broad jump","1 km, then 80 m"],
+  ["Run 5 + Row","1 km, then 1000 m"],
+  ["Run 6 + Farmers carry","1 km, then 200 m (Open 2 × 24 kg, Pro 2 × 32 kg)"],
+  ["Run 7 + Sandbag lunges","1 km, then 100 m (Open 20 kg, Pro 30 kg)"],
+  ["Run 8 + Wall balls","1 km, then 100 reps to 10 ft"],
+  ["Write down all 16 splits","Put them in the notes below — this is the whole point of the session"],
+  ["Check your division","Confirm current Open and Pro weights before you load anything"]]
+};
 const sameWeek = (a,b) => mondayOf(a) === mondayOf(b);
-function srcFor(date){ const s = S.swap && S.swap[date]; return (s && s !== date && sameWeek(s,date)) ? s : date; }
+function srcFor(date){
+  const s = S.swap && S.swap[date];
+  if (s === SIM) return SIM;
+  return (s && s !== date && sameWeek(s,date)) ? s : date;
+}
 function sessionFor(date){
   const src = srcFor(date);
-  const base = planFor(src);
+  const sim = src === SIM;
+  const base = sim ? {...SIM_SESSION, week:weekOf(date), phase:phaseOf(weekOf(date))} : planFor(src);
   const c = S.custom[src];
   const sess = c ? {...base, t: c.t || base.t, f: c.f !== undefined ? c.f : base.f, items: c.items} : base;
-  return {...sess, src, swapped: src !== date};
+  return {...sess, src, sim, swapped: src !== date};
 }
+const srcName = s => s.sim ? "the full simulation" : DOW[s2d(s.src).getDay()];
 function setSwap(date, src){
   if (!S.swap) S.swap = {};
   if (src === date) delete S.swap[date]; else S.swap[date] = src;
@@ -542,7 +563,10 @@ function swapRow(date, id){
   }).join("");
   return `<div class="swap">
     <label for="${id}">Following</label>
-    <select id="${id}">${opts}</select>
+    <select id="${id}">
+      <optgroup label="This week">${opts}</optgroup>
+      <optgroup label="Any week"><option value="${SIM}" ${cur===SIM?"selected":""}>Full HYROX simulation</option></optgroup>
+    </select>
     ${cur!==date?`<button class="undo" data-undo="1">Reset</button>`:""}
   </div>`;
 }
@@ -568,7 +592,7 @@ function drawToday(){
   const tag = s.race ? '<span class="tag race">Race day</span>' : s.rest ? '<span class="tag rest">Recovery</span>' : `<span class="tag phase">${esc(s.phase)}</span>`;
   const done = rec.done.length, tot = s.items.length;
   $("todayCard").innerHTML = `
-    <div class="hd"><div><h3>${esc(s.t)}</h3><div class="sub">${esc(s.f)} · week ${s.week}${s.swapped?` · swapped in from ${DOW[s2d(s.src).getDay()]}`:""}</div></div>${tag}</div>
+    <div class="hd"><div><h3>${esc(s.t)}</h3><div class="sub">${esc(s.f)} · week ${s.week}${s.swapped?` · ${s.sim?"in place of today\u2019s session":"swapped in from "+srcName(s)}`:""}</div></div>${tag}</div>
     ${swapRow(t,"swapToday")}
     <div id="todayItems">${s.items.map((it,i)=>`
       <button class="split" data-i="${i}" aria-pressed="${rec.done.includes(i)}">
@@ -607,7 +631,7 @@ function openEditor(date, doneDate){
   const host = document.createElement("div");
   host.className = "card";
   host.innerHTML = `
-    <div class="hd"><h3>Edit ${esc(pretty(date))}</h3></div>
+    <div class="hd"><h3>Edit ${esc(date === SIM ? "the full simulation" : pretty(date))}</h3></div>
     <div class="pad">
       <label class="f" for="eT">Session name</label>
       <input id="eT" value="${esc(s.t)}">
@@ -641,7 +665,7 @@ function openEditor(date, doneDate){
 function wireSwap(host, date, after){
   const sel = host.querySelector(".swap select");
   if (!sel) return;
-  sel.onchange = () => { setSwap(date, sel.value); after(); toast(sel.value === date ? "Back to this day's session" : `Following ${DOW[s2d(sel.value).getDay()]}'s session`); };
+  sel.onchange = () => { setSwap(date, sel.value); after(); toast(sel.value === date ? "Back to this day's session" : sel.value === SIM ? "Following the full simulation" : `Following ${DOW[s2d(sel.value).getDay()]}'s session`); };
   const u = host.querySelector("[data-undo]");
   if (u) u.onclick = () => { setSwap(date, date); after(); toast("Back to this day's session"); };
 }
@@ -654,7 +678,7 @@ function drawWeekStrip(){
     const pct = r && r.complete ? "done" : `${done}/${tot}`;
     return `<button class="row" data-d="${d}" data-done="${r&&r.complete?1:0}" data-today="${d===today()?1:0}">
       <span class="d">${DOW[s2d(d).getDay()]}<span>${s2d(d).getDate()} ${MON[s2d(d).getMonth()]}</span></span>
-      <span class="t"><b>${esc(s.t)}</b><span>${esc(s.f||"")}${s.swapped?` · from ${DOW[s2d(s.src).getDay()]}`:""}</span></span>
+      <span class="t"><b>${esc(s.t)}</b><span>${esc(s.f||"")}${s.swapped?` · ${s.sim?"simulation":"from "+srcName(s)}`:""}</span></span>
       <span class="pct">${pct}</span></button>`;
   }).join("");
   const tot = Array.from({length:7},(_,i)=>addD(mon,i)).filter(d => S.days[d] && S.days[d].complete).length;
@@ -681,7 +705,7 @@ function drawPlan(){
     const done = r ? r.done.length : 0;
     return `<button class="row" data-plan-day="${d}" data-done="${r&&r.complete?1:0}" data-today="${d===today()?1:0}" style="display:flex;gap:12px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid #EAEAE4;width:100%;text-align:left;background:none">
       <span class="d" style="width:44px;flex:none;font-family:'Barlow Condensed';font-weight:600;line-height:1.05">${DOW[s2d(d).getDay()]}<span style="display:block;font-size:11px;color:var(--ink-soft);font-family:Barlow;font-weight:400">${s2d(d).getDate()} ${MON[s2d(d).getMonth()]}</span></span>
-      <span class="t" style="flex:1;min-width:0"><b style="display:block;font-size:15.5px;font-weight:600">${esc(s.t)}</b><span style="font-size:12.5px;color:var(--ink-soft)">${esc(s.f||"")}${s.swapped?` · from ${DOW[s2d(s.src).getDay()]}`:""}</span></span>
+      <span class="t" style="flex:1;min-width:0"><b style="display:block;font-size:15.5px;font-weight:600">${esc(s.t)}</b><span style="font-size:12.5px;color:var(--ink-soft)">${esc(s.f||"")}${s.swapped?` · ${s.sim?"simulation":"from "+srcName(s)}`:""}</span></span>
       <span class="pct" style="font-family:'Barlow Condensed';font-weight:700;color:${r&&r.complete?"var(--done)":"var(--ink-soft)"}">${r&&r.complete?"done":done+"/"+s.items.length}</span></button>`;
   }).join("");
   html += `</div><div id="planDetail"></div>`;
@@ -692,7 +716,7 @@ function drawPlanDetail(date){
   const s = sessionFor(date), rec = dayRec(date);
   const tag = s.race ? '<span class="tag race">Race day</span>' : s.rest ? '<span class="tag rest">Recovery</span>' : "";
   $("planDetail").innerHTML = `<div class="card">
-    <div class="hd"><div><h3>${esc(s.t)}</h3><div class="sub">${esc(pretty(date))} · ${esc(s.f||"")}${s.swapped?` · swapped in from ${DOW[s2d(s.src).getDay()]}`:""}</div></div>${tag}</div>
+    <div class="hd"><div><h3>${esc(s.t)}</h3><div class="sub">${esc(pretty(date))} · ${esc(s.f||"")}${s.swapped?` · ${s.sim?"in place of today\u2019s session":"swapped in from "+srcName(s)}`:""}</div></div>${tag}</div>
     ${swapRow(date,"swapPlan")}
     <div id="pdItems">${s.items.map((it,i)=>`
       <button class="split" data-i="${i}" aria-pressed="${rec.done.includes(i)}">
@@ -850,7 +874,7 @@ function drawDietCal(){
 /* ============ trends ============ */
 const TYPES = [
   {d:1, n:"Lower + sled"}, {d:2, n:"Cricket + upper"}, {d:3, n:"Engine"},
-  {d:4, n:"Recovery"},     {d:5, n:"Full body"},       {d:6, n:"Long / sim"}, {d:0, n:"Rest"}
+  {d:4, n:"Recovery"},     {d:5, n:"Full body"},       {d:6, n:"Long run"},  {d:0, n:"Rest"}, {d:SIM, n:"Full simulation"}
 ];
 function scan(){
   const end = addD(PROGRAM_START, 12*7 - 1);
@@ -861,7 +885,7 @@ function scan(){
     const ticks = r ? r.done.length : 0;
     rows.push({
       date:d, week:weekOf(d), dow:s2d(d).getDay(), rest:!!s.rest, swapped:!!s.swapped,
-      srcDow:s2d(s.src).getDay(),
+      srcDow: s.sim ? SIM : s2d(s.src).getDay(),
       state: r && r.complete ? "full" : ticks ? "part" : "miss",
       ratio: r && r.complete ? 1 : ticks / Math.max(s.items.length,1)
     });
