@@ -122,6 +122,13 @@ svg{display:block;width:100%;height:auto}
 .cal i[data-s="1"]{background:#CFE0D6;border-color:#BBD2C4}
 .cal i[data-t="1"]{outline:2px solid var(--ink);outline-offset:1px}
 
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.mode button{background:var(--surface);border:0;border-right:1px solid var(--hair);padding:12px 12px 13px;text-align:left;line-height:1.25}
+.mode button:last-child{border-right:0}
+.mode button b{display:block;font-family:"Barlow Condensed";font-weight:600;font-size:17px}
+.mode button span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+.mode button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1}
+.mode button[aria-pressed="true"] span{color:#A7B0BA}
 .weeknav{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;-webkit-overflow-scrolling:touch}
 .weeknav button{flex:none;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:7px 11px;font-family:"Barlow Condensed";font-weight:600;font-size:14px;white-space:nowrap}
 .weeknav button[aria-current="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
@@ -214,14 +221,19 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 
 <!-- ================= PLAN ================= -->
 <section class="view" id="v-plan">
-  <div class="sec"><h2>Training plan <small>12 weeks · Sun is rest · Thu is optional second rest</small></h2><hr class="rule"></div>
+  <div class="sec"><h2>Training plan <small>12 weeks · Sun off · Thu optional</small></h2><hr class="rule"></div>
+  <div class="card" style="margin-top:12px">
+    <div class="hd"><h3>Structure</h3><div class="sub">Applies to the whole block</div></div>
+    <div class="mode" id="modeSel">
+      <button data-m="separated"><b>Separated</b><span>Lifts and HYROX work on different days</span></button>
+      <button data-m="mixed"><b>Mixed</b><span>Sleds and carries after the lifts</span></button>
+    </div>
+  </div>
   <div class="weeknav" id="weekNav"></div>
   <div id="planWeek"></div>
   <div class="card">
     <div class="hd"><h3>How the block is built</h3></div>
-    <div class="note" style="padding-top:12px">
-      Weeks 1–4 build base volume, 5–8 add load and compromised running, 9–11 sharpen at race pace, and week 12 tapers into race day. Monday and Friday carry the strength work, Tuesday keeps cricket skill and bowling volume alive, Wednesday is the engine session, and Saturday is where the race simulations sit. Every session is editable — tap a day, then <b>Edit session</b> to rewrite it in your own words.
-    </div>
+    <div class="note" style="padding-top:12px" id="planNote"></div>
   </div>
 </section>
 
@@ -391,7 +403,7 @@ const pretty = s => { const d = s2d(s); return `${DOW[d.getDay()]} ${d.getDate()
 const mondayOf = s => addD(s, -(( s2d(s).getDay()+6)%7));
 
 const GOAL_DATE = addD(PROGRAM_START, Math.ceil((START_W - TARGET_W)/RATE*7));  // Fri 29 Jan 2027
-const DEFAULTS = () => ({start:START_W, target:TARGET_W, rate:RATE, goalDate:GOAL_DATE, stepGoal:10000, v:2});
+const DEFAULTS = () => ({start:START_W, target:TARGET_W, rate:RATE, goalDate:GOAL_DATE, stepGoal:10000, split:"separated", v:3});
 
 const weekOf = s => Math.floor(diffD(PROGRAM_START, mondayOf(s))/7) + 1;
 const phaseOf = w => w<=4 ? "Base" : w<=8 ? "Build" : w<=11 ? "Sharpen" : "Race week";
@@ -459,6 +471,43 @@ function planFor(dateStr){
     if (dow===3) return {...head, t:"Race primer", f:"15 min total", items:[["SkiErg","2 × 250 m at race pace"],["Row","2 × 250 m"],["Burpee broad jump","2 × 6"],["Stop early","Leave feeling fresh"]]};
     if (dow===4) return {...head, t:"Rest and travel", f:"Nothing hard", rest:true, items:[["Walk","20 min"],["Mobility","10 min, shoulders and hips"],["Kit check","Shoes, gloves, belt, gels, bib"],["Carbs up","Extra 100–150 g today"]]};
     if (dow===5) return planFor(RACE);
+  }
+  const sep = S.settings.split !== "mixed";
+  if (sep) switch(dow){
+    case 1: return {...head, t:"Strength — lower", f:"Heavy, full rest, no conditioning", items:[
+      ["Warm-up","5 min bike, hip flow, two build-up sets"],
+      ["Back squat", p.heavy],
+      ["Romanian deadlift", p.acc],
+      ["Front-foot elevated split squat", p.acc + " each leg"],
+      ["Standing calf raise","3 × 12–15"],
+      ["Hanging knee raise", p.core],
+      ["Cool down","5 min easy bike, quads and hip flexors"]]};
+    case 2: return {...head, t:"Cricket + strength — upper", f:"Skills first, then pressing and pulling", items:[
+      ["Band shoulder prep","External rotation, internal rotation, face pulls — 2 rounds of 15"],
+      ["Batting","30–40 min: throwdowns, front-foot drives, then pace off the back foot"],
+      ["Bowling", w<=4 ? "3–4 overs off a short run" : w<=8 ? "5–6 overs, building to full run-up" : "4 overs at full pace, quality over volume"],
+      ["Neutral-grip dumbbell bench", p.heavy],
+      ["Chest-supported row", p.acc],
+      ["Half-kneeling landmine press", p.acc + " each side"],
+      ["Pallof press", p.core + " each side"],
+      ["Cool down","Sleeper stretch, doorway pec stretch, thoracic rotations"]]};
+    case 5:
+      if (w >= 9) return {...head, t:"HYROX stations", f:"Sleds, carries, compromised runs", items:[
+        ["Warm-up","800 m easy jog, hip flow, one light sled length"],
+        ["Sled push", p.sled],
+        ["Sled pull", p.sled],
+        ["Farmer's carry", p.carry],
+        ["Sandbag lunges", p.lunge],
+        ["Compromised runs","3 × [1 km at race pace, straight into one station]"],
+        ["Cool down","10 min walk, hips and forearms"]]};
+      return {...head, t:"Strength — posterior chain", f:"Heavy, full rest, no conditioning", items:[
+        ["Warm-up","500 m easy row, banded good mornings, two build-up sets"],
+        ["Trap-bar deadlift", p.heavy],
+        ["Barbell hip thrust", p.acc],
+        ["Single-leg Romanian deadlift", p.acc + " each side"],
+        ["Weighted pull-up or lat pulldown", p.acc],
+        ["Side plank and dead bug", p.core],
+        ["Cool down","5 min walk, hamstrings and lats"]]};
   }
   switch(dow){
     case 1: return {...head, t:"Lower strength + sled", f:"Push and pull", items:[
@@ -612,7 +661,7 @@ function drawToday(){
   $("todayItems").querySelectorAll(".split").forEach(b=>b.onclick=()=>{
     const i = +b.dataset.i, r = dayRec(t), k = r.done.indexOf(i);
     if (k<0) r.done.push(i); else r.done.splice(k,1);
-    if (r.done.length === s.items.length) r.complete = true;
+    if (s.items.every((_,k) => r.done.includes(k))) r.complete = true;
     save(); drawToday(); drawWeekStrip(); drawTrends();
   });
   $("tNotes").oninput = e => { dayRec(t).notes = e.target.value; save(); };
@@ -688,8 +737,22 @@ function drawWeekStrip(){
 
 /* ============ plan ============ */
 let navWeek = null;
+const NOTES = {
+  separated: `Lifting days stay clean. Monday is heavy lower, Tuesday is cricket plus upper, and Friday is posterior chain through week 8 — full rest between sets, nothing metabolic bolted on the end. The HYROX work sits on Wednesday for the engine and Saturday for stations and compromised running. From week 9 Friday flips to a second HYROX day, so the block starts strength-biased and finishes race-specific. Sunday is off, Thursday is yours to take as a second rest.`,
+  mixed: `Six training days with sleds, carries and wall balls attached to the strength sessions. Fewer separate sessions, but the conditioning lands on legs that have already squatted, so expect the lifts to feel heavier as the block goes on.`
+};
 function drawPlan(){
   const cur = Math.min(Math.max(weekOf(today()),1),12);
+  const mode = S.settings.split === "mixed" ? "mixed" : "separated";
+  $("planNote").textContent = NOTES[mode];
+  $("modeSel").querySelectorAll("button").forEach(b => {
+    b.setAttribute("aria-pressed", b.dataset.m === mode);
+    b.onclick = () => {
+      if (b.dataset.m === mode) return;
+      S.settings.split = b.dataset.m; save();
+      redrawAll(); toast(b.dataset.m === "mixed" ? "Sleds and carries back on the lifting days" : "Lifts and HYROX work separated");
+    };
+  });
   if (navWeek === null) navWeek = cur;
   $("weekNav").innerHTML = Array.from({length:12},(_,i)=>{
     const w = i+1, mon = addD(PROGRAM_START, i*7);
@@ -734,7 +797,7 @@ function drawPlanDetail(date){
   $("pdItems").querySelectorAll(".split").forEach(b => b.onclick = () => {
     const i = +b.dataset.i, r = dayRec(date), k = r.done.indexOf(i);
     if (k<0) r.done.push(i); else r.done.splice(k,1);
-    if (r.done.length === s.items.length) r.complete = true;
+    if (s.items.every((_,k) => r.done.includes(k))) r.complete = true;
     save(); drawPlan(); drawPlanDetail(date); if (date===today()) drawToday(); drawWeekStrip(); drawTrends();
   });
   $("pNotes").oninput = e => { dayRec(date).notes = e.target.value; save(); };
@@ -873,8 +936,8 @@ function drawDietCal(){
 
 /* ============ trends ============ */
 const TYPES = [
-  {d:1, n:"Lower + sled"}, {d:2, n:"Cricket + upper"}, {d:3, n:"Engine"},
-  {d:4, n:"Recovery"},     {d:5, n:"Full body"},       {d:6, n:"Long run"},  {d:0, n:"Rest"}, {d:SIM, n:"Full simulation"}
+  {d:1, n:"Lower lift"},   {d:2, n:"Cricket + upper"}, {d:3, n:"Engine"},
+  {d:4, n:"Recovery"},     {d:5, n:"Fri lift / stations"}, {d:6, n:"Long run"},  {d:0, n:"Rest"}, {d:SIM, n:"Full simulation"}
 ];
 function scan(){
   const end = addD(PROGRAM_START, 12*7 - 1);
@@ -1041,9 +1104,10 @@ function urlImport(){
   const saved = await Store.get();
   if (saved){
     S = Object.assign(S, saved);
-    const sg = S.settings && S.settings.stepGoal;          // keep a custom step goal
+    const keep = {stepGoal: S.settings && S.settings.stepGoal, split: S.settings && S.settings.split};
     S.settings = DEFAULTS();
-    if (sg) S.settings.stepGoal = sg;
+    if (keep.stepGoal) S.settings.stepGoal = keep.stepGoal;
+    if (keep.split)    S.settings.split    = keep.split;
   }
   $("wGoalLbl").textContent = `${START_W} lb \u2192 ${TARGET_W} lb by ${pretty(GOAL_DATE)} 2027`;
   urlImport();
