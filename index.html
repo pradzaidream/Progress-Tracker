@@ -231,6 +231,27 @@ svg{display:block;width:100%;height:auto}
 .plist .row .nm{flex:1;min-width:0}
 .plist .row .rr{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-align:right;flex:none}
 
+/* ---------- import ---------- */
+.imp .seg{display:flex;gap:6px;padding:14px 14px 0}
+.imp .seg button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink-soft)}
+.imp .seg button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
+.imp .drop{margin:12px 14px 0;border:1px dashed var(--hair);border-radius:var(--r);padding:20px 14px;text-align:center}
+.imp .drop.over{border-color:var(--done);background:#F2F7F4}
+.imp .drop b{display:block;font-family:"Barlow Condensed";font-weight:600;font-size:17px}
+.imp .drop span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.45}
+.imp .drop input{display:none}
+.imp .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cols{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px}
+.cols button{border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:5px 9px;font-family:"Barlow Condensed";font-weight:600;font-size:13px;color:var(--ink-soft)}
+.cols button[aria-pressed="true"]{background:var(--lane);border-color:var(--lane);color:#fff}
+.prev{border-top:1px solid var(--hair);max-height:280px;overflow:auto}
+.prev .r{display:flex;gap:10px;padding:8px 14px;border-top:1px solid #ECECE6;font-size:14px;align-items:baseline}
+.prev .r:first-child{border-top:0}
+.prev .r i{flex:none;width:19px;font-style:normal;font-size:11px;color:#B0B4BA;font-variant-numeric:tabular-nums}
+.prev .r b{flex:1;min-width:0;font-weight:600;font-family:"Barlow Condensed";font-size:15.5px}
+.prev .r span{flex:1.1;min-width:0;font-size:12.5px;color:var(--ink-soft);line-height:1.35}
+.warn{margin:0;padding:11px 14px;border-top:1px solid var(--hair);background:#FBF6EA;font-size:12.5px;color:#6B5A2E;line-height:1.5}
+
 /* ---------- cricket ---------- */
 .crow{display:flex;align-items:center;gap:11px;width:100%;padding:10px 0;border:0;border-top:1px solid #ECECE6;background:none;text-align:left}
 .crow:first-child{border-top:0}
@@ -308,6 +329,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 <!-- ================= PLAN ================= -->
 <section class="view" id="v-plan">
   <div class="sec"><h2>Training plan <small>12 weeks · Sun off · Thu optional</small></h2><hr class="rule"></div>
+  <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="impOpen">Import a session from a spreadsheet</button></div>
   <div class="card" style="margin-top:12px">
     <div class="hd"><h3>Structure</h3><div class="sub">Applies to the whole block</div></div>
     <div class="mode" id="modeSel">
@@ -415,6 +437,76 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <div class="btnrow"><button class="btn ghost" id="copyUrl">Copy the address</button></div>
   </div>
 </section>
+
+<!-- ================= IMPORT (lives in Plan) ================= -->
+<template id="tplImport">
+  <div class="card imp">
+    <div class="hd"><h3>Import a session</h3><div class="sub">from a spreadsheet</div></div>
+    <div class="seg">
+      <button data-src="file" aria-pressed="true">Upload a file</button>
+      <button data-src="link" aria-pressed="false">Google Sheets link</button>
+    </div>
+
+    <div id="impFileBox">
+      <label class="drop" id="impDrop">
+        <b>Choose a file or drop one here</b>
+        <span>.xlsx, .xls, .csv or .tsv</span>
+        <input type="file" id="impFile" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </label>
+    </div>
+
+    <div id="impLinkBox" hidden>
+      <div class="pad">
+        <label class="f" for="impUrl">Sheet link</label>
+        <input id="impUrl" placeholder="https://docs.google.com/spreadsheets/d/..." autocomplete="off">
+        <div style="height:10px"></div>
+        <label class="f" for="impTab">Sheet name inside the workbook</label>
+        <input id="impTab" placeholder="Leave blank for the first sheet" autocomplete="off">
+      </div>
+      <div class="btnrow"><button class="btn solid" id="impFetch">Read the sheet</button></div>
+      <div class="note">The sheet has to be shared as "anyone with the link can view". A private sheet will not open from here — export it as CSV and upload the file instead.</div>
+    </div>
+
+    <div id="impPick" hidden>
+      <div class="pad">
+        <label class="f" for="impSheet">Sheet</label>
+        <select id="impSheet"></select>
+      </div>
+    </div>
+
+    <div id="impBody" hidden>
+      <div class="pad" style="padding-top:0">
+        <label class="f" for="impTitle">Session name</label>
+        <input id="impTitle">
+        <div style="height:10px"></div>
+        <div class="two">
+          <div>
+            <label class="f" for="impDate">Day</label>
+            <input id="impDate" type="date">
+          </div>
+          <div>
+            <label class="f" for="impMode">Apply as</label>
+            <select id="impMode">
+              <option value="replace">Replace the session</option>
+              <option value="append">Add to the session</option>
+            </select>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <label class="f" for="impName">Which column names the exercise</label>
+        <select id="impName"></select>
+      </div>
+      <label class="f" style="padding:0 14px 7px;display:block">What goes in the detail line</label>
+      <div class="cols" id="impCols"></div>
+      <div id="impWarn"></div>
+      <div class="prev" id="impPrev"></div>
+      <div class="btnrow">
+        <button class="btn solid" id="impApply">Apply</button>
+        <button class="btn ghost" id="impClose">Cancel</button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <!-- ================= CRICKET ================= -->
 <section class="view" id="v-cricket">
@@ -1378,6 +1470,250 @@ function drawFuel(){
     </div>`).join("");
 }
 
+/* ============ spreadsheet import ============ */
+let IMP = null;   // {sheets:[{name,rows}], si:0, head:[], body:[], nameCol:0, cols:Set}
+
+const HINTS = {
+  name:["exercise","movement","workout","drill","activity","name","item","lift","exercises"],
+  sets:["set","sets"], reps:["rep","reps","repetition","repetitions","count"],
+  load:["weight","load","kg","lb","lbs","resistance","%1rm","rpe"],
+  time:["time","duration","min","mins","minute","minutes","sec","secs","seconds","tempo","work"],
+  dist:["distance","dist","metres","meters","m","km","cal","calories"],
+  rest:["rest","recovery"],
+  note:["note","notes","comment","comments","cue","cues","detail","details","description"]
+};
+const hintOf = h => {
+  const words = String(h||"").toLowerCase().split(/[^a-z0-9%]+/).filter(Boolean);
+  if (!words.length) return null;
+  const t = words.join("");
+  /* whole words first, so "burpee" never counts as "rpe" */
+  for (const k in HINTS) if (HINTS[k].some(x => words.indexOf(x) >= 0 || t === x)) return k;
+  for (const k in HINTS) if (HINTS[k].some(x => x.length > 3 && t.indexOf(x) >= 0)) return k;
+  return null;
+};
+
+function parseDelimited(text){
+  const first = text.split("\n")[0] || "";
+  const d = first.split("\t").length > first.split(",").length ? "\t" : ",";
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i=0;i<text.length;i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === d){ row.push(cell); cell = ""; }
+    else if (c === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if (c !== "\r") cell += c;
+  }
+  if (cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c));
+}
+
+/* find the header row: the first row where at least two cells look like column names */
+function splitHead(rows){
+  let hi = -1, best = 1;
+  for (let i=0;i<Math.min(rows.length-1,8);i++){        // a header needs rows beneath it
+    const hits = rows[i].filter(c => hintOf(c)).length;
+    const filled = rows[i].filter(c => c).length;
+    const score = hits*2 + (filled > 1 ? 1 : 0);
+    if (hits >= 1 && score > best){ best = score; hi = i; }
+  }
+  if (hi < 0) return {head:rows[0].map((_,i)=>"Column "+(i+1)), body:rows, guessed:true};
+  return {head:rows[hi], body:rows.slice(hi+1), guessed:false};
+}
+
+function loadSheetJS(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((res, rej) => {
+    const el = document.createElement("script");
+    el.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    el.onload = () => res(window.XLSX);
+    el.onerror = () => rej(new Error("no-xlsx"));
+    document.head.appendChild(el);
+  });
+}
+
+function impSetSheets(sheets, fallbackTitle){
+  IMP = {sheets, si:0, title:fallbackTitle};
+  const box = $("impPick");
+  if (sheets.length > 1){
+    box.hidden = false;
+    $("impSheet").innerHTML = sheets.map((s,i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
+  } else box.hidden = true;
+  impUseSheet(0);
+}
+
+function impUseSheet(i){
+  IMP.si = i;
+  const sh = IMP.sheets[i];
+  const {head, body, guessed} = splitHead(sh.rows);
+  IMP.head = head; IMP.body = body; IMP.guessed = guessed;
+
+  let nameCol = head.findIndex(h => hintOf(h) === "name");
+  if (nameCol < 0){
+    /* fall back to the column with the most wordy cells */
+    let bestScore = -1;
+    head.forEach((_,c) => {
+      const sc = body.reduce((a,r) => a + (String(r[c]||"").replace(/[\d\s.,:/×x-]/g,"").length > 2 ? 1 : 0), 0);
+      if (sc > bestScore){ bestScore = sc; nameCol = c; }
+    });
+  }
+  IMP.nameCol = Math.max(0, nameCol);
+  IMP.cols = new Set(head.map((h,c) => c).filter(c => c !== IMP.nameCol && hintOf(head[c])));
+  if (!IMP.cols.size) head.forEach((h,c) => { if (c !== IMP.nameCol && body.some(r => r[c])) IMP.cols.add(c); });
+
+  $("impTitle").value = IMP.title || sh.name || "Session";
+  $("impBody").hidden = false;
+  impDraw();
+}
+
+function detailFor(r){
+  const h = IMP.head, out = [];
+  const val = c => String(r[c]||"").trim();
+  const by = k => h.findIndex((x,c) => IMP.cols.has(c) && hintOf(x) === k);
+  const sets = by("sets"), reps = by("reps");
+  const used = new Set();
+  if (sets >= 0 && reps >= 0 && val(sets) && val(reps)){
+    out.push(`${val(sets)} × ${val(reps)}`); used.add(sets); used.add(reps);
+  }
+  [...IMP.cols].sort((a,b)=>a-b).forEach(c => {
+    if (used.has(c) || !val(c)) return;
+    const k = hintOf(h[c]);
+    if (k === "load") out.push("@ " + val(c));
+    else if (k === "rest") out.push("rest " + val(c));
+    else if (k === "note") out.push(val(c));
+    else if (k === "sets") out.push(/^\d+$/.test(val(c)) ? val(c) + " sets" : val(c));
+    else if (k === "reps") out.push(/^\d+$/.test(val(c)) ? val(c) + " reps" : val(c));
+    else out.push(val(c));
+  });
+  return out.join(" · ");
+}
+
+function impItems(){
+  return IMP.body
+    .map(r => [String(r[IMP.nameCol]||"").trim(), detailFor(r)])
+    .filter(it => it[0]);
+}
+
+function impDraw(){
+  const h = IMP.head;
+  $("impName").innerHTML = h.map((x,c) => `<option value="${c}" ${c===IMP.nameCol?"selected":""}>${esc(x||("Column "+(c+1)))}</option>`).join("");
+  $("impCols").innerHTML = h.map((x,c) => c === IMP.nameCol ? "" :
+    `<button data-c="${c}" aria-pressed="${IMP.cols.has(c)}">${esc(x||("Column "+(c+1)))}</button>`).join("");
+  $("impCols").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const c = +b.dataset.c;
+    IMP.cols.has(c) ? IMP.cols.delete(c) : IMP.cols.add(c);
+    impDraw();
+  });
+
+  const items = impItems();
+  $("impWarn").innerHTML = IMP.guessed
+    ? `<p class="warn">No header row was recognised, so the columns are numbered and the first one is being treated as the exercise. Check the preview and switch the columns if that is wrong.</p>`
+    : "";
+  $("impPrev").innerHTML = items.length
+    ? items.map((it,i) => `<div class="r"><i>${i+1}</i><b>${esc(it[0])}</b><span>${esc(it[1])||"—"}</span></div>`).join("")
+    : `<div class="r"><span>Nothing readable in this sheet. Try a different column or a different sheet.</span></div>`;
+  $("impApply").disabled = !items.length;
+}
+
+function impOpen(){
+  if ($("impCard")) { scrollTo_($("impCard")); return; }
+  const host = document.createElement("div");
+  host.id = "impCard";
+  host.appendChild($("tplImport").content.cloneNode(true));
+  $("impOpen").after(host);
+  $("impDate").value = today();
+  wireImport(host);
+  scrollTo_(host);
+}
+
+function wireImport(host){
+  host.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+    host.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    $("impFileBox").hidden = b.dataset.src !== "file";
+    $("impLinkBox").hidden = b.dataset.src !== "link";
+  });
+
+  const drop = $("impDrop");
+  ["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", ev => { const f = ev.dataTransfer.files[0]; if (f) readFile(f); });
+  $("impFile").onchange = e => { const f = e.target.files[0]; if (f) readFile(f); };
+
+  $("impFetch").onclick = () => {
+    const url = $("impUrl").value.trim();
+    const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (!m) { toast("That does not look like a Google Sheets link"); return; }
+    let u = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv`;
+    const tab = $("impTab").value.trim(), gid = url.match(/[#&?]gid=(\d+)/);
+    if (tab) u += "&sheet=" + encodeURIComponent(tab);
+    else if (gid) u += "&gid=" + gid[1];
+    $("impFetch").disabled = true; $("impFetch").textContent = "Reading…";
+    fetch(u)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(t => {
+        if (/^\s*</.test(t)) throw new Error("html");
+        const rows = parseDelimited(t);
+        if (!rows.length) throw new Error("empty");
+        impSetSheets([{name: tab || "Sheet", rows}], tab || "Session");
+        toast("Sheet loaded");
+      })
+      .catch(() => toast("Could not open it. Check the sharing is set to anyone with the link, or upload a CSV."))
+      .finally(() => { $("impFetch").disabled = false; $("impFetch").textContent = "Read the sheet"; });
+  };
+
+  $("impSheet").onchange = e => impUseSheet(+e.target.value);
+  $("impName").onchange = e => {
+    IMP.nameCol = +e.target.value; IMP.cols.delete(IMP.nameCol); impDraw();
+  };
+  $("impClose").onclick = () => host.remove();
+  $("impApply").onclick = () => {
+    const items = impItems(), date = $("impDate").value || today();
+    if (!items.length) return;
+    const t = $("impTitle").value.trim() || "Session";
+    if ($("impMode").value === "append"){
+      const base = sessionFor(date);
+      S.custom[date] = {t: (S.custom[date] && S.custom[date].t) || base.t, f: base.f || "", items: base.items.concat(items)};
+    } else {
+      S.custom[date] = {t, f: "Imported from a sheet", items};
+      dayRec(date).done = [];
+    }
+    save(); host.remove(); redrawAll();
+    toast(`${items.length} exercise${items.length>1?"s":""} into ${pretty(date)}`);
+  };
+}
+
+function readFile(f){
+  const ext = (f.name.split(".").pop() || "").toLowerCase();
+  const base = f.name.replace(/\.[^.]+$/,"");
+  if (ext === "csv" || ext === "tsv" || ext === "txt"){
+    const r = new FileReader();
+    r.onload = () => {
+      const rows = parseDelimited(r.result);
+      if (!rows.length) { toast("That file came back empty"); return; }
+      impSetSheets([{name: base, rows}], base);
+    };
+    r.readAsText(f);
+    return;
+  }
+  loadSheetJS().then(XLSX => {
+    const r = new FileReader();
+    r.onload = () => {
+      const wb = XLSX.read(new Uint8Array(r.result), {type:"array"});
+      const sheets = wb.SheetNames.map(n => ({
+        name: n,
+        rows: XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, blankrows:false, defval:""})
+                .map(row => row.map(c => String(c === null || c === undefined ? "" : c).trim()))
+                .filter(row => row.some(c => c))
+      })).filter(sh => sh.rows.length);
+      if (!sheets.length) { toast("No readable sheets in that workbook"); return; }
+      impSetSheets(sheets, sheets.length === 1 ? base : null);
+    };
+    r.readAsArrayBuffer(f);
+  }).catch(() => toast("Could not load the spreadsheet reader. Export the sheet as CSV and upload that instead."));
+}
+
 /* ============ cricket ============ */
 const CRICKET = [
   {k:"bat_astro", n:"Batting session — astro",  g:"Batting"},
@@ -1634,6 +1970,7 @@ $("copyUrl").onclick = async () => {
   catch(e){ toast("Select the address and copy it by hand"); }
 };
 $("dDate").onchange = () => { drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); drawFuel(); };
+$("impOpen").onclick = impOpen;
 $("crDate").onchange = () => drawCricket();
 $("crPick").onchange = () => {
   const d = crDate(), r = crRec(d);
