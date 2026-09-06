@@ -165,6 +165,60 @@ svg{display:block;width:100%;height:auto}
 .hbar .track i{display:block;height:100%;background:var(--lane)}
 .hbar .val{width:46px;flex:none;text-align:right;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 
+
+/* ---------- fuel: phase, gauge, meals ---------- */
+.phase{background:var(--surface);border:1px solid var(--hair);border-left:4px solid var(--done);border-radius:var(--r);margin-top:12px;padding:13px 14px}
+.phase.fuel{border-left-color:var(--sand)}
+.phase .pt{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.phase .pn{font-family:"Barlow Condensed";font-weight:600;font-size:20px;letter-spacing:.01em}
+.phase .pw{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.phase .px{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-top:6px}
+
+.gauge{padding:14px}
+.gt{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:10px}
+.gt .big{font-family:"Barlow Condensed";font-weight:700;font-size:46px;line-height:.86;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.gt .big.over{color:var(--signal)}
+.gt .lab{font-size:12.5px;color:var(--ink-soft);margin-top:4px}
+.gt .rt{text-align:right;font-size:12.5px;color:var(--ink-soft);line-height:1.55;flex:none}
+.gt .rt b{font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{height:8px;background:#EFEFE9;border:1px solid var(--hair);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--done);transition:width .25s ease}
+.bar i.over{background:var(--signal)}
+.bar.p i{background:var(--lane)}
+.gsub{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft);margin:14px 0 5px}
+.gsub b{font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+.track{display:flex;gap:6px;padding:14px}
+.track button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink-soft)}
+.track button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
+
+.mgrp>h4{margin:0;padding:12px 14px 8px;border-top:1px solid var(--hair);font-family:"Barlow Condensed";font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mgrp>h4 em{font-style:normal;font-family:"Barlow";font-weight:400;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.fi{display:flex;align-items:center;gap:11px;width:100%;padding:9px 14px;border:0;border-top:1px solid #ECECE6;background:none;text-align:left}
+.fi .bx{width:19px;height:19px;flex:none;border:1px solid var(--hair);border-radius:2px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;color:transparent}
+.fi[aria-pressed="true"] .bx{background:var(--done);border-color:var(--done);color:#fff}
+.fi .t{flex:1;min-width:0;font-size:14.5px;line-height:1.3}
+.fi[aria-pressed="true"] .t{color:var(--ink-soft);text-decoration:line-through}
+.fi .m{flex:none;text-align:right;font-size:11.5px;color:var(--ink-soft);line-height:1.3;font-variant-numeric:tabular-nums}
+.fi.match{align-items:flex-start}
+.fi.match .t b{display:block;font-family:"Barlow Condensed";font-weight:600;font-size:16px}
+.fi.match .t span{display:block;font-size:12px;color:var(--ink-soft);line-height:1.35;margin-top:1px}
+.fi.match[aria-pressed="true"] .bx{background:var(--sand);border-color:var(--sand);color:var(--ink)}
+.fi.match[aria-pressed="true"] .t{text-decoration:none;color:var(--ink)}
+.xrow{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid #ECECE6;font-size:14.5px}
+.xrow .t{flex:1;min-width:0}
+.xrow .m{font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;flex:none}
+.xrow button{border:0;background:none;color:var(--ink-soft);font-size:21px;line-height:1;padding:0 2px;flex:none}
+.addrow{display:grid;grid-template-columns:1fr 58px 48px auto;gap:6px;padding:12px 14px;border-top:1px solid var(--hair)}
+.addrow input{font-size:14.5px;padding:8px}
+.plist .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #ECECE6;font-size:14px}
+.plist .row:first-child{border-top:0}
+.plist .row .dot{width:8px;height:8px;border-radius:50%;background:var(--hair);flex:none}
+.plist .row.now .dot{background:var(--done)}
+.plist .row.now{font-family:"Barlow Condensed";font-weight:600;font-size:16px}
+.plist .row .nm{flex:1;min-width:0}
+.plist .row .rr{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-align:right;flex:none}
+
 /* ---------- tabs ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--ink);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
 nav button{flex:1;background:none;border:0;color:#8A94A0;padding:13px 1px 14px;font-family:"Barlow Condensed";font-weight:600;font-size:13.5px;border-top:3px solid transparent;letter-spacing:-.01em}
@@ -202,7 +256,8 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   </div>
   <div class="card" id="todayCard"></div>
 
-  <div class="sec"><h2>Fuel <small>three checks, once a day</small></h2><hr class="rule"></div>
+  <div class="sec"><h2>Fuel <small id="tfPhase"></small></h2><hr class="rule"></div>
+  <div class="card"><div class="gauge" id="tfGauge"></div></div>
   <div class="grid3" style="margin-top:12px" id="dietToday"></div>
 
   <div class="card">
@@ -332,9 +387,41 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 
 <!-- ================= DIET ================= -->
 <section class="view" id="v-diet">
-  <div class="sec"><h2>Fuel log <small>no added sugar · calories in range · creatine</small></h2><hr class="rule"></div>
+  <div class="sec"><h2>Eating plan <small>the target moves with the phase</small></h2><hr class="rule"></div>
+
   <div class="card">
     <div class="hd"><h3 id="dietDayLbl"></h3><div class="sub"><input id="dDate" type="date" style="width:auto;padding:5px 8px;font-size:13px"></div></div>
+    <div class="gauge" id="fGauge"></div>
+    <button class="fi match" id="matchTog" aria-pressed="false">
+      <span class="bx">✓</span>
+      <span class="t"><b>Cricket match day</b><span id="matchNote"></span></span>
+    </button>
+    <div class="track">
+      <button data-tr="std" aria-pressed="true">Standard</button>
+      <button data-tr="ind" aria-pressed="false">Indian</button>
+    </div>
+    <div id="mealList"></div>
+    <div class="addrow">
+      <input id="xName" placeholder="Anything else" autocomplete="off">
+      <input id="xCal" placeholder="cal" inputmode="numeric">
+      <input id="xPro" placeholder="P" inputmode="numeric">
+      <button class="btn solid" id="xAdd">Add</button>
+    </div>
+  </div>
+
+  <div class="phase" id="phaseCard">
+    <div class="pt"><span class="pn" id="phName"></span><span class="pw" id="phWin"></span></div>
+    <div class="px" id="phNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>The five phases</h3><div class="sub">228 lb → 190 lb<br>by 28 Feb 2027</div></div>
+    <div class="pad plist" id="phaseList"></div>
+    <div class="note">The plan lands nearer 199 lb than 190. The last ten pounds come off at about half the rate of the first twenty, so treat 190 as the target and 195 as a good outcome.</div>
+  </div>
+
+  <div class="sec"><h2>Daily checks <small>no added sugar · calories in range · creatine</small></h2><hr class="rule"></div>
+  <div class="card">
     <div class="pad grid3" id="dietPicker"></div>
   </div>
   <div class="card">
@@ -391,7 +478,7 @@ const Store = {
 /* ============ dates ============ */
 const PROGRAM_START = "2026-08-31";      // Monday of week 1
 const RACE = "2026-11-20";               // Friday
-const START_W = 228, TARGET_W = 185, RATE = 2.0;   // lb, lb, lb per week
+const START_W = 228, TARGET_W = 190, RATE = 1.5;   // lb, lb, lb per week
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const d2s = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -402,7 +489,7 @@ const today = () => d2s(new Date());
 const pretty = s => { const d = s2d(s); return `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`; };
 const mondayOf = s => addD(s, -(( s2d(s).getDay()+6)%7));
 
-const GOAL_DATE = addD(PROGRAM_START, Math.ceil((START_W - TARGET_W)/RATE*7));  // Fri 29 Jan 2027
+const GOAL_DATE = "2027-02-28";   // Sunday 28 February 2027
 const DEFAULTS = () => ({start:START_W, target:TARGET_W, rate:RATE, goalDate:GOAL_DATE, stepGoal:10000, split:"separated", v:3});
 
 const weekOf = s => Math.floor(diffD(PROGRAM_START, mondayOf(s))/7) + 1;
@@ -560,7 +647,7 @@ function planFor(dateStr){
 }
 
 /* ============ state ============ */
-let S = { settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, days:{}, custom:{}, swap:{} };
+let S = { settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, days:{}, custom:{}, swap:{} };
 let saveT = null;
 function save(){ clearTimeout(saveT); saveT = setTimeout(()=>Store.set(S), 250); }
 function toast(m){ const t = document.getElementById("toast"); t.textContent = m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"), 1900); }
@@ -670,7 +757,8 @@ function drawToday(){
   wireSwap($("todayCard"), t, () => { drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); });
   $("qw").value = S.weights[t] ?? "";
   $("qs").value = S.steps[t] ?? "";
-  drawDiet($("dietToday"), t, ()=>{ drawDiet($("dietPicker"), $("dDate").value||t, refreshDiet); drawDietCal(); });
+  drawDiet($("dietToday"), t, ()=>{ drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); });
+  drawTodayFuel();
 }
 
 function openEditor(date, doneDate){
@@ -934,6 +1022,218 @@ function drawDietCal(){
   $("dietDayLbl").textContent = pretty($("dDate").value || today());
 }
 
+/* ============ fuel: phases, targets, meal plans ============ */
+const HT_CM = 180.34, AGE = 45, ACT = 1.5;
+const maintAt = lb => Math.round((10*(lb/2.2046) + 6.25*HT_CM - 5*AGE + 5) * ACT / 10) * 10;
+
+const PHASES = [
+  {id:"build", n:"Race build",     a:"2026-08-31", b:"2026-11-06", cal:2400, pro:195, fuel:false,
+   x:"Moderate deficit through the hardest training block. Session quality wins over scale speed here."},
+  {id:"taper", n:"Taper",          a:"2026-11-07", b:"2026-11-20", cal:2900, pro:190, fuel:true,
+   x:"Calories back up, carbs up in the last five days. The scale will rise a pound or two — that is glycogen, not fat."},
+  {id:"push",  n:"Post-race push", a:"2026-11-21", b:"2026-12-19", cal:2250, pro:195, fuel:false,
+   x:"Deeper deficit now the race is done. Hold 12,000 steps a day so you can eat this much and still lose."},
+  {id:"hold",  n:"Holiday hold",   a:"2026-12-20", b:"2027-01-03", cal:2750, pro:190, fuel:true,
+   x:"Planned maintenance, not a lapse. Eat at Christmas. This resets appetite and makes January work."},
+  {id:"final", n:"Final block",    a:"2027-01-04", b:"2027-02-28", cal:2200, pro:195, fuel:false,
+   x:"The last stretch. Steps are non-negotiable and the weekends cannot undo the weekdays."}
+];
+
+const FOOD = {
+  egg:[72,6.3,"Large egg"], bread:[90,4,"Slice wholegrain bread"], pb:[95,3.5,"Tbsp peanut butter"],
+  oats:[150,5,"Oats, 40 g dry"], whey:[120,24,"Whey scoop"], gyog:[100,17,"Greek yoghurt, 170 g"],
+  berries:[50,1,"Berries, 100 g"], banana:[105,1.3,"Banana"], fruit:[80,1,"Apple or orange"],
+  chicken:[250,47,"Chicken breast, 150 g"], salmon:[310,34,"Salmon, 150 g"], beef:[265,37,"Lean beef 93/7, 150 g"],
+  paneer:[265,18,"Paneer, 100 g"], dal:[220,15,"Dal, 1 cup"], rice:[205,4,"Rice, 1 cup cooked"],
+  roti:[110,3,"Roti"], potato:[190,4,"Roast potato, 200 g"], sweetpot:[180,3.5,"Sweet potato, 200 g"],
+  sabzi:[120,5,"Mixed veg sabzi, 1.5 cup"], salad:[160,3,"Big salad, 1 tbsp olive oil"],
+  curd:[120,10,"Curd, 200 g"], almonds:[115,4,"Almonds, 20 g"], cottage:[120,20,"Cottage cheese, 150 g"],
+  honey:[64,0,"Tbsp honey"], coconutw:[45,0,"Coconut water"]
+};
+
+const PLANS = {
+ std2200:[["Breakfast",[["egg",3],["bread",1]]],
+   ["Mid-morning",[["gyog",1],["berries",1]]],
+   ["Lunch",[["chicken",1],["rice",0.75],["salad",1]]],
+   ["Around training",[["whey",1],["banana",1]]],
+   ["Dinner",[["beef",1],["sweetpot",1],["sabzi",1]]],
+   ["Evening",[["cottage",1],["potato",1],["fruit",1]]]],
+ std2250:[["Breakfast",[["egg",3],["bread",1],["pb",0.5]]],
+   ["Mid-morning",[["gyog",1],["berries",1]]],
+   ["Lunch",[["chicken",1],["rice",0.75],["salad",1]]],
+   ["Around training",[["whey",1],["banana",1]]],
+   ["Dinner",[["beef",1],["sweetpot",1],["sabzi",1]]],
+   ["Evening",[["cottage",1],["potato",1],["fruit",1]]]],
+ std2400:[["Breakfast",[["egg",3],["bread",2]]],
+   ["Mid-morning",[["gyog",1],["berries",1],["almonds",1]]],
+   ["Lunch",[["chicken",1],["rice",1],["salad",1]]],
+   ["Around training",[["whey",1],["banana",1]]],
+   ["Dinner",[["salmon",1],["potato",1],["sabzi",1]]],
+   ["Evening",[["cottage",1],["fruit",2]]]],
+ std2750:[["Breakfast",[["egg",3],["bread",2],["pb",1],["oats",1]]],
+   ["Mid-morning",[["gyog",1],["berries",1],["almonds",1]]],
+   ["Lunch",[["chicken",1],["rice",1.75],["salad",1]]],
+   ["Around training",[["whey",1],["banana",1]]],
+   ["Dinner",[["salmon",1],["potato",1],["sabzi",1]]],
+   ["Evening",[["cottage",1],["fruit",1]]]],
+ std2900:[["Breakfast",[["oats",1],["egg",3],["bread",2],["honey",2],["banana",1]]],
+   ["Mid-morning",[["gyog",1],["berries",1]]],
+   ["Lunch",[["chicken",1],["rice",1.5],["salad",1]]],
+   ["Around training",[["whey",1],["fruit",1],["coconutw",1]]],
+   ["Dinner",[["salmon",1],["potato",1.5],["sabzi",1]]],
+   ["Evening",[["cottage",1],["almonds",1]]]],
+ ind2200:[["Breakfast",[["egg",3],["curd",1]]],
+   ["Mid-morning",[["whey",1],["fruit",1],["almonds",1]]],
+   ["Lunch",[["dal",1],["roti",2],["sabzi",1],["salad",1],["rice",0.5]]],
+   ["Around training",[["whey",1]]],
+   ["Dinner",[["chicken",1],["roti",1],["paneer",0.5]]],
+   ["Evening",[["cottage",1]]]],
+ ind2250:[["Breakfast",[["egg",3],["curd",1]]],
+   ["Mid-morning",[["whey",1],["banana",1],["almonds",1]]],
+   ["Lunch",[["dal",1],["roti",2],["sabzi",1],["salad",1],["rice",0.5]]],
+   ["Around training",[["whey",1]]],
+   ["Dinner",[["chicken",1],["roti",1],["paneer",0.5]]],
+   ["Evening",[["cottage",1]]]],
+ ind2400:[["Breakfast",[["egg",3],["bread",1],["curd",1]]],
+   ["Mid-morning",[["whey",1],["banana",1],["almonds",1]]],
+   ["Lunch",[["dal",1],["roti",2],["sabzi",1],["salad",1],["rice",0.5]]],
+   ["Around training",[["whey",1]]],
+   ["Dinner",[["chicken",1],["roti",2],["paneer",0.5]]],
+   ["Evening",[["cottage",1]]]],
+ ind2750:[["Breakfast",[["egg",4],["bread",2],["curd",1]]],
+   ["Mid-morning",[["whey",1],["banana",1],["almonds",1],["fruit",1]]],
+   ["Lunch",[["dal",1],["rice",1],["roti",2],["sabzi",1],["salad",1]]],
+   ["Around training",[["whey",1]]],
+   ["Dinner",[["chicken",1],["roti",2],["paneer",0.5]]],
+   ["Evening",[["cottage",1]]]],
+ ind2900:[["Breakfast",[["oats",1],["egg",3],["bread",2],["honey",1],["banana",1]]],
+   ["Mid-morning",[["curd",1],["whey",1],["fruit",2]]],
+   ["Lunch",[["dal",1],["rice",1.5],["roti",2],["sabzi",1],["salad",1]]],
+   ["Around training",[["whey",1],["coconutw",1]]],
+   ["Dinner",[["chicken",1],["roti",2]]],
+   ["Evening",[["cottage",1]]]]
+};
+
+const fuelDate = () => ($("dDate") && $("dDate").value) || today();
+function mealRec(d){
+  if (!S.meals) S.meals = {};
+  if (!S.meals[d]) S.meals[d] = {done:{}, extras:[], match:false, track:"std"};
+  const r = S.meals[d];
+  if (!r.done) r.done = {}; if (!r.extras) r.extras = []; if (!r.track) r.track = "std";
+  return r;
+}
+function fuelPhaseOf(d){
+  for (const p of PHASES) if (d >= p.a && d <= p.b) return p;
+  return d < PHASES[0].a ? PHASES[0] : PHASES[PHASES.length-1];
+}
+function weightOn(d){
+  const ks = Object.keys(S.weights).filter(k => k <= d).sort();
+  return ks.length ? S.weights[ks[ks.length-1]] : START_W;
+}
+function fuelTarget(d){
+  const p = fuelPhaseOf(d), r = mealRec(d);
+  if (r.match) return {cal:maintAt(weightOn(d)), pro:p.pro, fuel:true, p, match:true};
+  return {cal:p.cal, pro:p.pro, fuel:p.fuel, p, match:false};
+}
+const tierOf = cal => [2200,2250,2400,2750,2900]
+  .reduce((a,b) => Math.abs(b-cal) < Math.abs(a-cal) ? b : a);
+
+function fuelTotals(d){
+  const r = mealRec(d), t = fuelTarget(d);
+  const plan = PLANS[r.track + tierOf(t.cal)] || PLANS.std2400;
+  let cal = 0, pro = 0;
+  plan.forEach((g,gi) => g[1].forEach((it,ii) => {
+    if (r.done[gi+"_"+ii]){ const f = FOOD[it[0]]; cal += f[0]*it[1]; pro += f[1]*it[1]; }
+  }));
+  r.extras.forEach(e => { cal += e.c; pro += e.p; });
+  return {cal:Math.round(cal), pro:Math.round(pro), t, plan};
+}
+
+function gaugeHTML(d, compact){
+  const {cal, pro, t} = fuelTotals(d);
+  const left = t.cal - cal, over = left < 0;
+  const cw = Math.min(100, cal / t.cal * 100), pw = Math.min(100, pro / t.pro * 100);
+  const note = compact
+    ? `<div class="rt">eaten <b>${cal}</b><br>target <b>${t.cal}</b></div>`
+    : `<div class="rt">eaten <b>${cal}</b><br>target <b>${t.cal}</b><br>maintenance <b>${maintAt(weightOn(d))}</b></div>`;
+  return `<div class="gt">
+      <div>
+        <div class="big${over?" over":""}">${over ? "+"+Math.abs(left) : left}</div>
+        <div class="lab">${over ? "calories over" : "calories left"}</div>
+      </div>${note}
+    </div>
+    <div class="bar"><i class="${over?"over":""}" style="width:${cw}%"></i></div>
+    <div class="gsub"><span>Protein</span><span><b>${pro}</b> / <b>${t.pro}</b> g</span></div>
+    <div class="bar p"><i style="width:${pw}%"></i></div>`;
+}
+
+function drawTodayFuel(){
+  const d = today(), t = fuelTarget(d);
+  $("tfPhase").textContent = t.match ? "match day, eating at maintenance" : t.p.n.toLowerCase();
+  $("tfGauge").innerHTML = gaugeHTML(d, true);
+}
+
+function drawFuel(){
+  const d = fuelDate(), r = mealRec(d), t = fuelTarget(d), {plan} = fuelTotals(d);
+
+  $("fGauge").innerHTML = gaugeHTML(d, false);
+
+  $("phaseCard").className = "phase" + (t.fuel ? " fuel" : "");
+  $("phName").textContent = t.match ? "Match day · " + t.p.n : t.p.n;
+  $("phWin").textContent = `${s2d(t.p.a).getDate()} ${MON[s2d(t.p.a).getMonth()]} – ${s2d(t.p.b).getDate()} ${MON[s2d(t.p.b).getMonth()]}`;
+  $("phNote").textContent = t.match
+    ? "Eating at maintenance today. Do not run a deficit on a day you are batting and bowling in the heat."
+    : t.p.x;
+
+  $("matchTog").setAttribute("aria-pressed", !!r.match);
+  $("matchNote").textContent = `Lifts today to ${maintAt(weightOn(d))} cal, your maintenance at ${Math.round(weightOn(d))} lb`;
+  document.querySelectorAll(".track button").forEach(b =>
+    b.setAttribute("aria-pressed", b.dataset.tr === r.track));
+
+  let html = "";
+  plan.forEach((g, gi) => {
+    let gc = 0, gp = 0, rows = "";
+    g[1].forEach((it, ii) => {
+      const f = FOOD[it[0]], q = it[1];
+      const c = Math.round(f[0]*q), p = Math.round(f[1]*q*10)/10;
+      gc += c; gp += p;
+      const k = gi+"_"+ii, on = !!r.done[k];
+      const QW = {0.5:"Half a ", 0.75:"Three quarters ", 1.5:"1.5 × ", 1.75:"1.75 × "};
+      const label = q === 1 ? f[2] : (QW[q] || q + " × ") + (QW[q] ? f[2][0].toLowerCase() + f[2].slice(1) : f[2]);
+      rows += `<button class="fi" data-k="${k}" aria-pressed="${on}">
+        <span class="bx">✓</span><span class="t">${esc(label)}</span>
+        <span class="m">${c}<br>${p} g</span></button>`;
+    });
+    html += `<div class="mgrp"><h4>${g[0]}<em>${gc} cal · ${Math.round(gp)} g</em></h4>${rows}</div>`;
+  });
+  if (r.extras.length){
+    let x = `<div class="mgrp"><h4>Added by you<em>${r.extras.reduce((a,b)=>a+b.c,0)} cal</em></h4>`;
+    r.extras.forEach((e,i) => {
+      x += `<div class="xrow"><span class="t">${esc(e.n)}</span>
+        <span class="m">${e.c} cal · ${e.p} g</span>
+        <button data-x="${i}" aria-label="Remove ${esc(e.n)}">×</button></div>`;
+    });
+    html += x + "</div>";
+  }
+  $("mealList").innerHTML = html;
+
+  $("mealList").querySelectorAll(".fi").forEach(b => b.onclick = () => {
+    const r2 = mealRec(fuelDate()), k = b.dataset.k;
+    if (r2.done[k]) delete r2.done[k]; else r2.done[k] = 1;
+    save(); drawFuel(); drawTodayFuel();
+  });
+  $("mealList").querySelectorAll("[data-x]").forEach(b => b.onclick = () => {
+    mealRec(fuelDate()).extras.splice(+b.dataset.x, 1);
+    save(); drawFuel(); drawTodayFuel();
+  });
+
+  const now = fuelPhaseOf(d);
+  $("phaseList").innerHTML = PHASES.map(p => `<div class="row${p.id===now.id?" now":""}">
+      <span class="dot"></span><span class="nm">${p.n}</span>
+      <span class="rr">${s2d(p.a).getDate()} ${MON[s2d(p.a).getMonth()]} – ${s2d(p.b).getDate()} ${MON[s2d(p.b).getMonth()]}<br>${p.cal} cal · ${p.pro} g</span>
+    </div>`).join("");
+}
+
 /* ============ trends ============ */
 const TYPES = [
   {d:1, n:"Lower lift"},   {d:2, n:"Cricket + upper"}, {d:3, n:"Engine"},
@@ -1034,11 +1334,11 @@ function go(v){
   if (v==="trends") drawTrends();
   if (v==="weight") drawWeight();
   if (v==="steps") drawSteps();
-  if (v==="diet") drawDietCal();
+  if (v==="diet"){ drawDietCal(); drawFuel(); }
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
 
-function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); }
+function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); drawFuel(); drawTodayFuel(); }
 
 /* quick save on Today */
 $("qsave").onclick = () => {
@@ -1046,7 +1346,7 @@ $("qsave").onclick = () => {
   const w = parseFloat($("qw").value), s = parseInt($("qs").value,10);
   if (!isNaN(w)) S.weights[t] = w;
   if (!isNaN(s)) S.steps[t] = s;
-  save(); drawWeight(); drawSteps(); toast("Saved");
+  save(); drawWeight(); drawSteps(); drawFuel(); drawTodayFuel(); toast("Saved");
 };
 $("wSave").onclick = () => {
   const d = $("wDate").value, v = parseFloat($("wVal").value);
@@ -1067,7 +1367,28 @@ $("copyUrl").onclick = async () => {
   try { await navigator.clipboard.writeText($("urlTpl").textContent); toast("Address copied"); }
   catch(e){ toast("Select the address and copy it by hand"); }
 };
-$("dDate").onchange = () => { drawDiet($("dietPicker"), $("dDate").value, refreshDiet); drawDietCal(); };
+$("dDate").onchange = () => { drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); drawFuel(); };
+$("matchTog").onclick = () => {
+  const d = fuelDate(), r = mealRec(d);
+  const before = tierOf(fuelTarget(d).cal);
+  r.match = !r.match;
+  if (tierOf(fuelTarget(d).cal) !== before) r.done = {};   // different menu, start clean
+  save(); drawFuel(); drawTodayFuel();
+};
+document.querySelectorAll(".track button").forEach(b => b.onclick = () => {
+  const r = mealRec(fuelDate());
+  if (r.track === b.dataset.tr) return;
+  r.track = b.dataset.tr; r.done = {};
+  save(); drawFuel(); drawTodayFuel();
+});
+$("xAdd").onclick = () => {
+  const n = $("xName").value.trim();
+  const c = parseInt($("xCal").value,10) || 0, p = parseInt($("xPro").value,10) || 0;
+  if (!n || (!c && !p)) { toast("Give it a name and a calorie or protein number"); return; }
+  mealRec(fuelDate()).extras.push({n, c, p});
+  $("xName").value = ""; $("xCal").value = ""; $("xPro").value = "";
+  save(); drawFuel(); drawTodayFuel(); toast("Added");
+};
 $("exp").onclick = () => {
   const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
   const a = document.createElement("a");
@@ -1083,7 +1404,7 @@ $("impFile").onchange = e => {
 };
 $("wipe").onclick = () => {
   if (!confirm("Erase every weight, step, meal and session log on this device?")) return;
-  S = {settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, days:{}, custom:{}, swap:{}};
+  S = {settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, days:{}, custom:{}, swap:{}};
   save(); redrawAll(); toast("Everything erased");
 };
 
@@ -1114,9 +1435,10 @@ function urlImport(){
   const t = today();
   $("wDate").value = t; $("sDate").value = t; $("dDate").value = t;
   $("wVal").value = S.weights[t] ?? ""; $("sVal").value = S.steps[t] ?? "";
+  if (!S.meals) S.meals = {};
   drawHeader(); drawToday(); drawWeekStrip();
   drawDiet($("dietPicker"), t, refreshDiet);
-  drawDietCal();
+  drawDietCal(); drawFuel();
 })();
 </script>
 </body>
