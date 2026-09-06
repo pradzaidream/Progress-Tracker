@@ -188,10 +188,22 @@ svg{display:block;width:100%;height:auto}
 .gsub{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft);margin:14px 0 5px}
 .gsub b{font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 
-.track{display:flex;gap:6px;padding:14px}
-.track button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink-soft)}
-.track button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
+.trkSel{display:flex;gap:6px;padding:14px}
+.trkSel button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink-soft)}
+.trkSel button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
 
+.macros{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--hair)}
+.macros div{padding:11px 12px;border-right:1px solid var(--hair)}
+.macros div:last-child{border-right:0}
+.macros b{display:block;font-family:"Barlow Condensed";font-weight:700;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+.macros b s{text-decoration:none;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.macros span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+.macros .mb{height:4px;background:#EDEDE6;border-radius:1px;overflow:hidden;margin-top:7px}
+.macros .mb i{display:block;height:100%;background:var(--lane)}
+.macros .mb i.low{background:var(--sand)}
+.hbar .track i.low{background:var(--sand)}
+.hbar .track i.good{background:var(--done)}
+.hbar .note2{width:100%;padding:0 14px 12px}
 .mgrp>h4{margin:0;padding:12px 14px 8px;border-top:1px solid var(--hair);font-family:"Barlow Condensed";font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .mgrp>h4 em{font-style:normal;font-family:"Barlow";font-weight:400;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .fi{display:flex;align-items:center;gap:11px;width:100%;padding:9px 14px;border:0;border-top:1px solid #ECECE6;background:none;text-align:left}
@@ -257,7 +269,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   <div class="card" id="todayCard"></div>
 
   <div class="sec"><h2>Fuel <small id="tfPhase"></small></h2><hr class="rule"></div>
-  <div class="card"><div class="gauge" id="tfGauge"></div></div>
+  <div class="card"><div class="gauge" id="tfGauge"></div><div class="macros" id="tfMacros"></div></div>
   <div class="grid3" style="margin-top:12px" id="dietToday"></div>
 
   <div class="card">
@@ -392,11 +404,12 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   <div class="card">
     <div class="hd"><h3 id="dietDayLbl"></h3><div class="sub"><input id="dDate" type="date" style="width:auto;padding:5px 8px;font-size:13px"></div></div>
     <div class="gauge" id="fGauge"></div>
-    <button class="fi match" id="matchTog" aria-pressed="false">
+    <div class="macros" id="fMacros"></div>
+    <button class="fi match" id="matchTog" style="border-top:1px solid var(--hair)" aria-pressed="false">
       <span class="bx">✓</span>
       <span class="t"><b>Cricket match day</b><span id="matchNote"></span></span>
     </button>
-    <div class="track">
+    <div class="trkSel">
       <button data-tr="std" aria-pressed="true">Standard</button>
       <button data-tr="ind" aria-pressed="false">Indian</button>
     </div>
@@ -407,6 +420,12 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
       <input id="xPro" placeholder="P" inputmode="numeric">
       <button class="btn solid" id="xAdd">Add</button>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>Minerals and vitamins</h3><div class="sub">floors, not ceilings<br>from what you have ticked</div></div>
+    <div style="padding:8px 0 6px" id="fMicros"></div>
+    <div class="note">Sodium runs under target on every plan here, which is the point — food alone will not cover what you sweat out. Salt your food, and take electrolytes on match days and long sessions. Vitamin D is the other one food rarely reaches; that is a supplement conversation with your doctor.</div>
   </div>
 
   <div class="phase" id="phaseCard">
@@ -1051,19 +1070,50 @@ const FOOD = {
   honey:[64,0,"Tbsp honey"], coconutw:[45,0,"Coconut water"]
 };
 
+/* carb g, fat g, fibre g, sodium mg, potassium mg, magnesium mg, calcium mg, iron mg, vitamin D IU */
+const NUT = {
+  egg:[0.4,4.8,0,71,69,6,28,0.9,44],        bread:[15,1.2,2,150,80,25,30,1.0,0],
+  pb:[3.5,8,1,75,105,27,8,0.3,0],           oats:[27,3,4,2,145,55,21,1.8,0],
+  whey:[3,1.5,0,60,160,25,120,0.3,0],       gyog:[6,0.7,0,60,240,20,190,0.1,0],
+  berries:[12,0.3,3,1,80,15,20,0.4,0],      banana:[27,0.4,3,1,422,32,6,0.3,0],
+  fruit:[20,0.3,3.5,1,190,12,30,0.2,0],     chicken:[0,5.4,0,110,380,42,22,1.5,6],
+  salmon:[0,19,0,90,570,45,18,0.7,800],     beef:[0,12,0,100,480,33,24,4.0,6],
+  paneer:[4,20,0,20,100,22,480,0.2,0],      dal:[35,1.5,12,350,620,60,45,4.0,0],
+  rice:[45,0.4,0.6,2,55,19,16,1.9,0],       roti:[21,1.5,3,130,65,30,15,1.0,0],
+  potato:[42,0.2,4,15,900,50,20,1.6,0],     sweetpot:[41,0.2,6,70,670,50,60,1.2,0],
+  sabzi:[18,4,6,200,480,45,80,1.5,0],       salad:[8,14,3,30,400,30,70,1.2,0],
+  curd:[12,4,0,90,350,25,300,0.1,0],        almonds:[4,10,2.5,0,145,54,52,0.7,0],
+  cottage:[5,2,0,480,130,12,130,0.1,0],     honey:[17,0,0,1,11,0,1,0.1,0],
+  coconutw:[9,0,0,250,600,60,58,0.7,0]
+};
+
+/* carbs and fat by calorie tier; fat is a floor, not a ceiling */
+const MACRO = {2200:{c:207,f:65}, 2250:{c:211,f:65}, 2400:{c:240,f:65}, 2750:{c:292,f:65}, 2900:{c:361,f:65}};
+
+/* all of these are floors — more is fine, less is the thing to notice */
+const MICRO = [
+  {k:0, n:"Fibre",     u:"g",  t:35,   d:"Digestion and fullness in a deficit"},
+  {k:1, n:"Sodium",    u:"mg", t:3500, d:"Sweat losses; salt your food, more on match days"},
+  {k:2, n:"Potassium", u:"mg", t:3400, d:"Cramp protection alongside sodium"},
+  {k:3, n:"Magnesium", u:"mg", t:420,  d:"Cramping, sleep and recovery"},
+  {k:4, n:"Calcium",   u:"mg", t:1000, d:"Bone load at 45 under heavy lifting"},
+  {k:5, n:"Iron",      u:"mg", t:8,    d:"Oxygen carriage for the running blocks"},
+  {k:6, n:"Vitamin D", u:"IU", t:2000, d:"Rarely reachable from food alone"}
+];
+
 const PLANS = {
  std2200:[["Breakfast",[["egg",3],["bread",1]]],
    ["Mid-morning",[["gyog",1],["berries",1]]],
    ["Lunch",[["chicken",1],["rice",0.75],["salad",1]]],
    ["Around training",[["whey",1],["banana",1]]],
    ["Dinner",[["beef",1],["sweetpot",1],["sabzi",1]]],
-   ["Evening",[["cottage",1],["potato",1],["fruit",1]]]],
+   ["Evening",[["cottage",1],["potato",1],["almonds",1]]]],
  std2250:[["Breakfast",[["egg",3],["bread",1],["pb",0.5]]],
    ["Mid-morning",[["gyog",1],["berries",1]]],
    ["Lunch",[["chicken",1],["rice",0.75],["salad",1]]],
    ["Around training",[["whey",1],["banana",1]]],
    ["Dinner",[["beef",1],["sweetpot",1],["sabzi",1]]],
-   ["Evening",[["cottage",1],["potato",1],["fruit",1]]]],
+   ["Evening",[["cottage",1],["potato",1],["almonds",1]]]],
  std2400:[["Breakfast",[["egg",3],["bread",2]]],
    ["Mid-morning",[["gyog",1],["berries",1],["almonds",1]]],
    ["Lunch",[["chicken",1],["rice",1],["salad",1]]],
@@ -1141,12 +1191,19 @@ const tierOf = cal => [2200,2250,2400,2750,2900]
 function fuelTotals(d){
   const r = mealRec(d), t = fuelTarget(d);
   const plan = PLANS[r.track + tierOf(t.cal)] || PLANS.std2400;
-  let cal = 0, pro = 0;
+  let cal = 0, pro = 0, carb = 0, fat = 0;
+  const mic = [0,0,0,0,0,0,0];          // fibre, Na, K, Mg, Ca, Fe, vitD
   plan.forEach((g,gi) => g[1].forEach((it,ii) => {
-    if (r.done[gi+"_"+ii]){ const f = FOOD[it[0]]; cal += f[0]*it[1]; pro += f[1]*it[1]; }
+    if (!r.done[gi+"_"+ii]) return;
+    const f = FOOD[it[0]], n = NUT[it[0]], q = it[1];
+    cal += f[0]*q; pro += f[1]*q; carb += n[0]*q; fat += n[1]*q;
+    for (let i=0;i<7;i++) mic[i] += n[i+2]*q;
   }));
   r.extras.forEach(e => { cal += e.c; pro += e.p; });
-  return {cal:Math.round(cal), pro:Math.round(pro), t, plan};
+  const m = MACRO[tierOf(t.cal)] || MACRO[2400];
+  const micT = MICRO.map(x => x.n === "Sodium" && t.match ? 5000 : x.t);
+  return {cal:Math.round(cal), pro:Math.round(pro), carb:Math.round(carb), fat:Math.round(fat),
+          mic:mic.map(v => Math.round(v*10)/10), micT, m, t, plan};
 }
 
 function gaugeHTML(d, compact){
@@ -1167,16 +1224,44 @@ function gaugeHTML(d, compact){
     <div class="bar p"><i style="width:${pw}%"></i></div>`;
 }
 
+function macroHTML(d){
+  const {carb, fat, pro, m, t} = fuelTotals(d);
+  const row = (val, tgt, unit, name, floor) => {
+    const pct = Math.min(100, val/tgt*100);
+    const low = floor && val < tgt*0.85;
+    return `<div><b>${val}<s> / ${tgt} ${unit}</s></b><span>${name}</span>
+      <div class="mb"><i class="${low?"low":""}" style="width:${pct}%"></i></div></div>`;
+  };
+  return row(carb, m.c, "g", "carbs", false)
+       + row(fat,  m.f, "g", "fat, at least", true)
+       + row(pro,  t.pro, "g", "protein", true);
+}
+
+function microHTML(d){
+  const {mic, micT} = fuelTotals(d);
+  return MICRO.map((x,i) => {
+    const v = mic[i], tg = micT[i], pct = Math.min(100, v/tg*100);
+    const cls = v >= tg ? "good" : v < tg*0.7 ? "low" : "";
+    return `<div class="hbar"><span class="lbl">${x.n}</span>
+      <span class="track"><i class="${cls}" style="width:${pct}%"></i></span>
+      <span class="val">${v >= 100 ? Math.round(v) : v}</span></div>
+      <div class="note" style="padding:0 14px 9px 112px;font-size:11.5px">${x.d} · aim ${tg} ${x.u}</div>`;
+  }).join("");
+}
+
 function drawTodayFuel(){
   const d = today(), t = fuelTarget(d);
   $("tfPhase").textContent = t.match ? "match day, eating at maintenance" : t.p.n.toLowerCase();
   $("tfGauge").innerHTML = gaugeHTML(d, true);
+  $("tfMacros").innerHTML = macroHTML(d);
 }
 
 function drawFuel(){
   const d = fuelDate(), r = mealRec(d), t = fuelTarget(d), {plan} = fuelTotals(d);
 
   $("fGauge").innerHTML = gaugeHTML(d, false);
+  $("fMacros").innerHTML = macroHTML(d);
+  $("fMicros").innerHTML = microHTML(d);
 
   $("phaseCard").className = "phase" + (t.fuel ? " fuel" : "");
   $("phName").textContent = t.match ? "Match day · " + t.p.n : t.p.n;
@@ -1187,7 +1272,7 @@ function drawFuel(){
 
   $("matchTog").setAttribute("aria-pressed", !!r.match);
   $("matchNote").textContent = `Lifts today to ${maintAt(weightOn(d))} cal, your maintenance at ${Math.round(weightOn(d))} lb`;
-  document.querySelectorAll(".track button").forEach(b =>
+  document.querySelectorAll(".trkSel button").forEach(b =>
     b.setAttribute("aria-pressed", b.dataset.tr === r.track));
 
   let html = "";
@@ -1375,7 +1460,7 @@ $("matchTog").onclick = () => {
   if (tierOf(fuelTarget(d).cal) !== before) r.done = {};   // different menu, start clean
   save(); drawFuel(); drawTodayFuel();
 };
-document.querySelectorAll(".track button").forEach(b => b.onclick = () => {
+document.querySelectorAll(".trkSel button").forEach(b => b.onclick = () => {
   const r = mealRec(fuelDate());
   if (r.track === b.dataset.tr) return;
   r.track = b.dataset.tr; r.done = {};
