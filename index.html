@@ -231,9 +231,25 @@ svg{display:block;width:100%;height:auto}
 .plist .row .nm{flex:1;min-width:0}
 .plist .row .rr{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-align:right;flex:none}
 
+/* ---------- cricket ---------- */
+.crow{display:flex;align-items:center;gap:11px;width:100%;padding:10px 0;border:0;border-top:1px solid #ECECE6;background:none;text-align:left}
+.crow:first-child{border-top:0}
+.crow .dy{width:34px;flex:none;font-family:"Barlow Condensed";font-weight:600;font-size:14px;color:var(--ink-soft)}
+.crow.today .dy{color:var(--signal)}
+.crow .bx{width:19px;height:19px;flex:none;border:1px solid var(--hair);border-radius:2px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;color:transparent}
+.crow[aria-pressed="true"] .bx{background:var(--done);border-color:var(--done);color:#fff}
+.crow .nm{flex:1;min-width:0;font-size:14.5px;line-height:1.3}
+.crow[aria-pressed="true"] .nm{color:var(--ink-soft)}
+.crow.off .nm{color:#9AA0A8;font-style:italic}
+.crow .ed{flex:none;font-size:11px;color:var(--ink-soft);font-family:"Barlow Condensed";font-weight:600}
+.cal i[data-c="1"]{background:var(--done);border-color:var(--done);color:rgba(255,255,255,.7)}
+.cal i[data-c="0"]{background:#F3F3EE}
+.cal i[data-c="off"]{background:#fff;border-style:dashed;color:#C8C8C0}
+.gtag{display:inline-block;font-family:"Barlow Condensed";font-weight:600;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--hair);border-radius:2px;padding:1px 5px;margin-left:7px;vertical-align:1px}
+
 /* ---------- tabs ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--ink);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
-nav button{flex:1;background:none;border:0;color:#8A94A0;padding:13px 1px 14px;font-family:"Barlow Condensed";font-weight:600;font-size:13.5px;border-top:3px solid transparent;letter-spacing:-.01em}
+nav button{flex:1;background:none;border:0;color:#8A94A0;padding:13px 1px 14px;font-family:"Barlow Condensed";font-weight:600;font-size:12.5px;border-top:3px solid transparent;letter-spacing:-.01em}
 nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 .view{display:none}
 .view.on{display:block}
@@ -267,6 +283,9 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <hr class="rule">
   </div>
   <div class="card" id="todayCard"></div>
+
+  <div class="sec"><h2>Cricket <small>today's session</small></h2><hr class="rule"></div>
+  <div class="card"><div class="pad" style="padding:4px 14px" id="tcRow"></div></div>
 
   <div class="sec"><h2>Fuel <small id="tfPhase"></small></h2><hr class="rule"></div>
   <div class="card"><div class="gauge" id="tfGauge"></div><div class="macros" id="tfMacros"></div></div>
@@ -397,6 +416,45 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   </div>
 </section>
 
+<!-- ================= CRICKET ================= -->
+<section class="view" id="v-cricket">
+  <div class="sec"><h2>Cricket <small>one session a day, two days off</small></h2><hr class="rule"></div>
+
+  <div class="card">
+    <div class="hd"><h3 id="crDayLbl"></h3><div class="sub"><input id="crDate" type="date" style="width:auto;padding:5px 8px;font-size:13px"></div></div>
+    <div class="pad">
+      <label class="f" for="crPick">Session</label>
+      <select id="crPick"></select>
+    </div>
+    <div class="pad" style="padding-top:0">
+      <label class="f" for="crNotes">How it went</label>
+      <textarea id="crNotes" style="min-height:70px" placeholder="Timing, footwork, what to work on next"></textarea>
+    </div>
+    <div class="btnrow">
+      <button class="btn solid" id="crDone">Mark done</button>
+      <button class="btn ghost" id="crReset">Back to the rolled session</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>This week</h3><div class="sub" id="crWkSub"></div></div>
+    <div class="pad" id="crWeek"></div>
+    <div class="btnrow"><button class="btn ghost" id="crRoll">Re-roll the days you have not touched</button></div>
+    <div class="note">Sunday takes the game, Tuesday lines up with your cricket and upper day, Saturday is nets. The two off days land on whichever weekdays the roll picks.</div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>Last 8 weeks</h3><div class="sub">Filled means logged<br>dashed means a day off</div></div>
+    <div class="cal" id="crCal"></div>
+    <div class="stats" id="crStats"></div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>What you have been doing</h3><div class="sub">logged sessions<br>last 8 weeks</div></div>
+    <div style="padding:8px 0 12px" id="crMix"></div>
+  </div>
+</section>
+
 <!-- ================= DIET ================= -->
 <section class="view" id="v-diet">
   <div class="sec"><h2>Eating plan <small>the target moves with the phase</small></h2><hr class="rule"></div>
@@ -469,6 +527,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   <button data-v="weight">Weight</button>
   <button data-v="steps">Steps</button>
   <button data-v="diet">Fuel</button>
+  <button data-v="cricket">Cricket</button>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -666,7 +725,7 @@ function planFor(dateStr){
 }
 
 /* ============ state ============ */
-let S = { settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, days:{}, custom:{}, swap:{} };
+let S = { settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{} };
 let saveT = null;
 function save(){ clearTimeout(saveT); saveT = setTimeout(()=>Store.set(S), 250); }
 function toast(m){ const t = document.getElementById("toast"); t.textContent = m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"), 1900); }
@@ -777,7 +836,7 @@ function drawToday(){
   $("qw").value = S.weights[t] ?? "";
   $("qs").value = S.steps[t] ?? "";
   drawDiet($("dietToday"), t, ()=>{ drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); });
-  drawTodayFuel();
+  drawTodayFuel(); drawTodayCricket();
 }
 
 function openEditor(date, doneDate){
@@ -1319,6 +1378,127 @@ function drawFuel(){
     </div>`).join("");
 }
 
+/* ============ cricket ============ */
+const CRICKET = [
+  {k:"bat_astro", n:"Batting session — astro",  g:"Batting"},
+  {k:"bat_turf",  n:"Batting session — turf",   g:"Batting"},
+  {k:"nets",      n:"Team net session",         g:"Nets"},
+  {k:"machine",   n:"Bowling machine session",  g:"Batting"},
+  {k:"t20",       n:"T20 game",                 g:"Game"},
+  {k:"t30",       n:"T30 game",                 g:"Game"},
+  {k:"t40",       n:"T40 game",                 g:"Game"},
+  {k:"shadow",    n:"Shadow practice",          g:"Skills"},
+  {k:"field",     n:"Fielding drills",          g:"Skills"},
+  {k:"off",       n:"Off",                      g:"Off"}
+];
+const CR = k => CRICKET.find(c => c.k === k) || CRICKET[CRICKET.length-1];
+
+/* stable per-week roll: the same week always deals the same hand until you re-roll */
+function rng(seed){
+  let h = 2166136261;
+  for (let i=0;i<seed.length;i++){ h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return () => { h += 0x6D2B79F5; let t = h;
+    t = Math.imul(t ^ t>>>15, t | 1); t ^= t + Math.imul(t ^ t>>>7, t | 61);
+    return ((t ^ t>>>14) >>> 0) / 4294967296; };
+}
+function rollWeek(mon){
+  const r = rng("cricket|" + mon + "|" + (S.roll && S.roll[mon] || 0));
+  const pick = a => a[Math.floor(r()*a.length)];
+  const out = {};
+  out[addD(mon,6)] = pick(["t20","t20","t30","t40"]);            // Sunday, the training rest day
+  out[addD(mon,1)] = pick(["bat_turf","bat_astro","machine"]);   // Tuesday, your cricket and upper day
+  out[addD(mon,5)] = pick(["nets","nets","field"]);              // Saturday
+  const week = [0,2,3,4].slice();                                // Mon, Wed, Thu, Fri
+  for (let i=week.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [week[i],week[j]] = [week[j],week[i]]; }
+  const rest = week.slice(0,2), work = week.slice(2);
+  rest.forEach(o => out[addD(mon,o)] = "off");
+  const taken = [out[addD(mon,1)], out[addD(mon,5)]];
+  const bag = ["bat_astro","bat_turf","machine","shadow","field"].filter(k => taken.indexOf(k) < 0);
+  for (let i=bag.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [bag[i],bag[j]] = [bag[j],bag[i]]; }
+  work.forEach((o,i) => out[addD(mon,o)] = bag[i]);
+  return out;
+}
+const rolledFor = d => rollWeek(mondayOf(d))[d] || "off";
+function crRec(d){
+  if (!S.cricket) S.cricket = {};
+  if (!S.cricket[d]) S.cricket[d] = {};
+  return S.cricket[d];
+}
+const crKey  = d => crRec(d).a || rolledFor(d);
+const crDone = d => !!crRec(d).done;
+const crDate = () => ($("crDate") && $("crDate").value) || today();
+
+function drawTodayCricket(){
+  const d = today(), k = crKey(d), c = CR(k), done = crDone(d);
+  $("tcRow").innerHTML = `<button class="crow${k==="off"?" off":""}" aria-pressed="${done}" ${k==="off"?"disabled":""}>
+      <span class="bx">✓</span><span class="nm">${c.n}</span>
+      <span class="ed">${k==="off"?"":c.g}</span></button>`;
+  const b = $("tcRow").querySelector(".crow");
+  if (k !== "off") b.onclick = () => { const r = crRec(d); r.done = !r.done; save(); drawTodayCricket(); drawCricket(); };
+}
+
+function drawCricket(){
+  const d = crDate(), rec = crRec(d), k = crKey(d);
+  $("crDayLbl").textContent = pretty(d);
+  $("crPick").innerHTML = CRICKET.map(c =>
+    `<option value="${c.k}" ${c.k===k?"selected":""}>${c.n}</option>`).join("");
+  $("crNotes").value = rec.notes || "";
+  $("crDone").textContent = rec.done ? "Session logged" : "Mark done";
+  $("crDone").className = "btn solid" + (rec.done ? " on" : "");
+  $("crDone").disabled = (k === "off");
+
+  /* week strip */
+  const mon = mondayOf(d);
+  let wk = "", n = 0, tot = 0;
+  for (let i=0;i<7;i++){
+    const dd = addD(mon,i), kk = crKey(dd), c = CR(kk), on = crDone(dd);
+    if (kk !== "off"){ tot++; if (on) n++; }
+    wk += `<button class="crow${kk==="off"?" off":""}${dd===today()?" today":""}" data-d="${dd}" aria-pressed="${on}" ${kk==="off"?"disabled":""}>
+      <span class="dy">${DOW[s2d(dd).getDay()]}</span><span class="bx">✓</span>
+      <span class="nm">${c.n}</span><span class="ed">${kk==="off"?"":c.g}</span></button>`;
+  }
+  $("crWeek").innerHTML = wk;
+  $("crWkSub").textContent = `${n} of ${tot} logged`;
+  $("crWeek").querySelectorAll(".crow").forEach(b => b.onclick = () => {
+    const dd = b.dataset.d, r = crRec(dd);
+    r.done = !r.done; save(); drawCricket(); drawTodayCricket();
+  });
+
+  /* eight-week grid */
+  const start = addD(mondayOf(today()), -7*7), cells = [];
+  for (let i=0;i<56;i++){
+    const dd = addD(start,i), kk = crKey(dd);
+    const st = kk === "off" ? "off" : (crDone(dd) ? "1" : "0");
+    cells.push(`<i data-c="${st}" data-t="${dd===today()?1:0}" title="${pretty(dd)} · ${CR(kk).n}">${s2d(dd).getDate()}</i>`);
+  }
+  $("crCal").innerHTML = cells.join("");
+
+  /* counts */
+  const win = Array.from({length:56},(_,i)=>addD(start,i)).filter(x => x <= today());
+  const logged = win.filter(x => crDone(x) && crKey(x) !== "off");
+  const games  = logged.filter(x => CR(crKey(x)).g === "Game").length;
+  let streak = 0;
+  for (let i=0;;i++){ const dd = addD(today(), -i);
+    if (crKey(dd) === "off") continue;
+    if (crDone(dd)) streak++; else break;
+    if (i > 120) break; }
+  $("crStats").innerHTML = `
+    <div><b>${logged.length}</b><span>sessions logged</span></div>
+    <div><b>${games}</b><span>games played</span></div>
+    <div><b>${streak}</b><span>in a row, not counting days off</span></div>`;
+
+  /* mix */
+  const counts = {};
+  logged.forEach(x => { const c = CR(crKey(x)); counts[c.k] = (counts[c.k]||0) + 1; });
+  const max = Math.max(1, ...Object.values(counts));
+  $("crMix").innerHTML = CRICKET.filter(c => c.k !== "off").map(c => {
+    const v = counts[c.k] || 0;
+    return `<div class="hbar"><span class="lbl" style="width:132px;font-size:13px">${c.n.replace(" session","").replace(" — ", " ")}</span>
+      <span class="track"><i style="width:${v/max*100}%"></i></span>
+      <span class="val">${v}</span></div>`;
+  }).join("");
+}
+
 /* ============ trends ============ */
 const TYPES = [
   {d:1, n:"Lower lift"},   {d:2, n:"Cricket + upper"}, {d:3, n:"Engine"},
@@ -1420,10 +1600,11 @@ function go(v){
   if (v==="weight") drawWeight();
   if (v==="steps") drawSteps();
   if (v==="diet"){ drawDietCal(); drawFuel(); }
+  if (v==="cricket") drawCricket();
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
 
-function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); drawFuel(); drawTodayFuel(); }
+function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); drawFuel(); drawTodayFuel(); drawCricket(); drawTodayCricket(); }
 
 /* quick save on Today */
 $("qsave").onclick = () => {
@@ -1453,6 +1634,27 @@ $("copyUrl").onclick = async () => {
   catch(e){ toast("Select the address and copy it by hand"); }
 };
 $("dDate").onchange = () => { drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); drawFuel(); };
+$("crDate").onchange = () => drawCricket();
+$("crPick").onchange = () => {
+  const d = crDate(), r = crRec(d);
+  if ($("crPick").value === rolledFor(d)) delete r.a; else r.a = $("crPick").value;
+  if (r.a === "off" || crKey(d) === "off") r.done = false;
+  save(); drawCricket(); drawTodayCricket();
+};
+$("crNotes").oninput = e => { crRec(crDate()).notes = e.target.value; save(); };
+$("crDone").onclick = () => { const r = crRec(crDate()); r.done = !r.done; save(); drawCricket(); drawTodayCricket(); };
+$("crReset").onclick = () => {
+  const r = crRec(crDate()); delete r.a; save(); drawCricket(); drawTodayCricket(); toast("Back to the rolled session");
+};
+$("crRoll").onclick = () => {
+  const mon = mondayOf(crDate());
+  if (!S.roll) S.roll = {};
+  S.roll[mon] = (S.roll[mon] || 0) + 1;
+  for (let i=0;i<7;i++){ const dd = addD(mon,i), r = S.cricket && S.cricket[dd];
+    if (r && !r.a && !r.done && !r.notes) delete S.cricket[dd]; }
+  save(); drawCricket(); drawTodayCricket(); toast("Week re-rolled");
+};
+
 $("matchTog").onclick = () => {
   const d = fuelDate(), r = mealRec(d);
   const before = tierOf(fuelTarget(d).cal);
@@ -1489,7 +1691,7 @@ $("impFile").onchange = e => {
 };
 $("wipe").onclick = () => {
   if (!confirm("Erase every weight, step, meal and session log on this device?")) return;
-  S = {settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, days:{}, custom:{}, swap:{}};
+  S = {settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{}};
   save(); redrawAll(); toast("Everything erased");
 };
 
@@ -1518,12 +1720,14 @@ function urlImport(){
   $("wGoalLbl").textContent = `${START_W} lb \u2192 ${TARGET_W} lb by ${pretty(GOAL_DATE)} 2027`;
   urlImport();
   const t = today();
-  $("wDate").value = t; $("sDate").value = t; $("dDate").value = t;
+  $("wDate").value = t; $("sDate").value = t; $("dDate").value = t; $("crDate").value = t;
   $("wVal").value = S.weights[t] ?? ""; $("sVal").value = S.steps[t] ?? "";
   if (!S.meals) S.meals = {};
+  if (!S.cricket) S.cricket = {};
+  if (!S.roll) S.roll = {};
   drawHeader(); drawToday(); drawWeekStrip();
   drawDiet($("dietPicker"), t, refreshDiet);
-  drawDietCal(); drawFuel();
+  drawDietCal(); drawFuel(); drawCricket();
 })();
 </script>
 </body>
