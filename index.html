@@ -231,6 +231,38 @@ svg{display:block;width:100%;height:auto}
 .plist .row .nm{flex:1;min-width:0}
 .plist .row .rr{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-align:right;flex:none}
 
+/* ---------- shared segmented control ---------- */
+.segrow{display:flex;gap:6px}
+.segrow button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:14px;color:var(--ink-soft)}
+.segrow button[aria-pressed="true"]{background:var(--ink);color:#F5F5F1;border-color:var(--ink)}
+
+/* ---------- adherence score ---------- */
+.scorepick{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;padding:12px 14px 4px}
+.scorepick button{aspect-ratio:1;border:1px solid var(--hair);background:#fff;border-radius:2px;font-family:"Barlow Condensed";font-weight:700;font-size:14px;color:var(--ink-soft)}
+.scorepick button[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:#fff}
+.scoresub{padding:0 14px 12px;font-size:12px;color:var(--ink-soft)}
+
+/* ---------- report / snapshot ---------- */
+.snap{display:flex;flex-direction:column}
+.snapblk{padding:14px;border-top:1px solid var(--hair)}
+.snapblk:first-child{border-top:0}
+.snapblk .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.snapblk .top b{font-family:"Barlow Condensed";font-weight:700;font-size:15px}
+.snapblk .top em{font-style:normal;font-size:11.5px;color:var(--ink-soft)}
+.snapblk .big{font-family:"Barlow Condensed";font-weight:700;font-size:30px;line-height:1;margin-top:8px;font-variant-numeric:tabular-nums}
+.snapblk .big small{font-family:"Barlow";font-weight:400;font-size:13px;color:var(--ink-soft)}
+.snapblk .sub2{font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.4}
+.dstrip{display:grid;gap:2px;margin-top:11px}
+.dstrip i{aspect-ratio:1;border:1px solid var(--hair);border-radius:1px;background:#fff;font-style:normal}
+.dstrip i[data-s="3"]{background:var(--done);border-color:var(--done)}
+.dstrip i[data-s="2"]{background:#7FAE96;border-color:#7FAE96}
+.dstrip i[data-s="1"]{background:#E8D9AE;border-color:#DEC98E}
+.dstrip i[data-s="0"]{background:#F3DCDD;border-color:#E9C4C6}
+.dstrip i[data-t="1"]{outline:2px solid var(--ink);outline-offset:1px}
+.snapline{margin-top:9px}
+.trainnote{margin:0 0 12px}
+.trainnote textarea{min-height:56px}
+
 /* ---------- import ---------- */
 .imp .seg{display:flex;gap:6px;padding:14px 14px 0}
 .imp .seg button{flex:1;border:1px solid var(--hair);background:var(--surface);border-radius:2px;padding:8px;font-family:"Barlow Condensed";font-weight:600;font-size:15px;color:var(--ink-soft)}
@@ -270,7 +302,7 @@ svg{display:block;width:100%;height:auto}
 
 /* ---------- tabs ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--ink);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
-nav button{flex:1;background:none;border:0;color:#8A94A0;padding:13px 1px 14px;font-family:"Barlow Condensed";font-weight:600;font-size:12.5px;border-top:3px solid transparent;letter-spacing:-.01em}
+nav button{flex:1;background:none;border:0;color:#8A94A0;padding:13px 1px 14px;font-family:"Barlow Condensed";font-weight:600;font-size:11.5px;border-top:3px solid transparent;letter-spacing:-.01em}
 nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 .view{display:none}
 .view.on{display:block}
@@ -423,6 +455,29 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <div class="hd"><h3>Last 14 days</h3><div class="sub" id="sAvg"></div></div>
     <div id="sChart" class="pad"></div>
   </div>
+
+  <div class="sec"><h2>Sleep <small>7.5 h is the target on a training day like this</small></h2><hr class="rule"></div>
+  <div class="card">
+    <div class="pad grid2">
+      <div><label class="f" for="slDate">Date</label><input id="slDate" type="date"></div>
+      <div><label class="f" for="slHrs">Hours slept</label><input id="slHrs" type="number" step="0.25" inputmode="decimal" placeholder="e.g. 7.5"></div>
+    </div>
+    <div class="pad" style="padding-top:0">
+      <label class="f">Quality</label>
+      <div class="segrow" id="slQual">
+        <button data-q="poor">Poor</button>
+        <button data-q="fair">Fair</button>
+        <button data-q="good">Good</button>
+        <button data-q="great">Great</button>
+      </div>
+    </div>
+    <div class="btnrow"><button class="btn solid" id="slSave">Log sleep</button></div>
+  </div>
+  <div class="card">
+    <div class="hd"><h3>Last 14 nights</h3><div class="sub" id="slAvg"></div></div>
+    <div id="slChart" class="pad"></div>
+  </div>
+
   <div class="card">
     <div class="hd"><h3>Send steps from your iPhone</h3><div class="sub">Apple Health · Shortcuts</div></div>
     <div class="note" style="padding-top:12px">
@@ -508,6 +563,38 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   </div>
 </template>
 
+<!-- ================= REPORT ================= -->
+<section class="view" id="v-report">
+  <div class="sec"><h2>Report <small>a snapshot to share with your trainer</small></h2><hr class="rule"></div>
+
+  <div class="card">
+    <div class="pad">
+      <div class="segrow" id="repWin">
+        <button data-n="7" aria-pressed="true">Last 7 days</button>
+        <button data-n="14">Last 14</button>
+        <button data-n="30">Last 30</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3 id="repTitle">Snapshot</h3><div class="sub" id="repRange"></div></div>
+    <div class="snap" id="repSnap"></div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>Note for your trainer</h3><div class="sub">included when you copy</div></div>
+    <div class="pad trainnote">
+      <textarea id="repNote" placeholder="Anything you want them to know alongside the numbers — shoulder feeling, a session you swapped, how the sleep run has been"></textarea>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn solid" id="repCopy">Copy snapshot as text</button>
+  </div>
+  <div class="note">This tab is built to screenshot cleanly for your trainer, or use Copy to send the same numbers as a message.</div>
+</section>
+
 <!-- ================= CRICKET ================= -->
 <section class="view" id="v-cricket">
   <div class="sec"><h2>Cricket <small>one session a day, two days off</small></h2><hr class="rule"></div>
@@ -555,6 +642,9 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <div class="hd"><h3 id="dietDayLbl"></h3><div class="sub"><input id="dDate" type="date" style="width:auto;padding:5px 8px;font-size:13px"></div></div>
     <div class="gauge" id="fGauge"></div>
     <div class="macros" id="fMacros"></div>
+    <div class="hd" style="border-top:1px solid var(--hair)"><h3>How closely did you eat the plan</h3><div class="sub" id="scAvg"></div></div>
+    <div class="scorepick" id="scPick"></div>
+    <div class="scoresub">1 is way off, 10 is exactly on plan. Tap your score again to clear it.</div>
     <button class="fi match" id="matchTog" style="border-top:1px solid var(--hair)" aria-pressed="false">
       <span class="bx">✓</span>
       <span class="t"><b>Cricket match day</b><span id="matchNote"></span></span>
@@ -620,6 +710,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   <button data-v="steps">Steps</button>
   <button data-v="diet">Fuel</button>
   <button data-v="cricket">Cricket</button>
+  <button data-v="report">Report</button>
 </nav>
 <div class="toast" id="toast"></div>
 
@@ -817,7 +908,7 @@ function planFor(dateStr){
 }
 
 /* ============ state ============ */
-let S = { settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{} };
+let S = { settings:DEFAULTS(), weights:{}, steps:{}, sleep:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{}, reportNote:"" };
 let saveT = null;
 function save(){ clearTimeout(saveT); saveT = setTimeout(()=>Store.set(S), 250); }
 function toast(m){ const t = document.getElementById("toast"); t.textContent = m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"), 1900); }
@@ -1413,6 +1504,7 @@ function drawFuel(){
   $("fGauge").innerHTML = gaugeHTML(d, false);
   $("fMacros").innerHTML = macroHTML(d);
   $("fMicros").innerHTML = microHTML(d);
+  drawScore();
 
   $("phaseCard").className = "phase" + (t.fuel ? " fuel" : "");
   $("phName").textContent = t.match ? "Match day · " + t.p.n : t.p.n;
@@ -1714,6 +1806,221 @@ function readFile(f){
   }).catch(() => toast("Could not load the spreadsheet reader. Export the sheet as CSV and upload that instead."));
 }
 
+/* ============ sleep ============ */
+const SLEEP_GOAL = 7.5;
+const QLAB = {poor:"Poor", fair:"Fair", good:"Good", great:"Great"};
+function slRec(d){ if (!S.sleep) S.sleep = {}; return S.sleep[d] || null; }
+function slDate(){ return ($("slDate") && $("slDate").value) || today(); }
+
+function drawSleepForm(){
+  const d = slDate(), r = slRec(d);
+  $("slHrs").value = r ? r.hrs : "";
+  $("slQual").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", !!r && r.q === b.dataset.q));
+}
+
+function drawSleep(){
+  drawSleepForm();
+  const days = Array.from({length:14},(_,i)=>addD(today(), i-13));
+  const vals = days.map(d => { const r = slRec(d); return r ? r.hrs : null; });
+  const got = vals.filter(v => v != null);
+  const avg = got.length ? got.reduce((a,b)=>a+b,0)/got.length : null;
+  $("slAvg").textContent = avg != null ? `${avg.toFixed(1)} h average \u00b7 ${got.filter(v=>v>=SLEEP_GOAL).length}/${got.length} nights at target` : "nothing logged yet";
+  const W=600,H=200,L=26,R=6,T=12,B=24,bw=(W-L-R)/14;
+  const max = Math.max(SLEEP_GOAL*1.3, ...got, 1);
+  const gy = T + (1 - SLEEP_GOAL/max)*(H-T-B);
+  $("slChart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sleep, last 14 nights">
+    ${vals.map((v,i)=>{
+      const h = v==null ? 0 : (v/max)*(H-T-B), x = L+i*bw+2, y = H-B-h;
+      const c = v==null ? "#E4E4DE" : v>=SLEEP_GOAL ? "var(--done)" : v>=SLEEP_GOAL*0.8 ? "#E8D9AE" : "#E7A7AB";
+      return `<rect x="${x}" y="${v?y:H-B-2}" width="${bw-4}" height="${v?h:2}" fill="${c}"/>`;
+    }).join("")}
+    <line x1="${L}" x2="${W-R}" y1="${gy}" y2="${gy}" stroke="var(--signal)" stroke-dasharray="4 4"/>
+    <text x="${L}" y="${gy-4}" font-size="10" fill="#B4232E" font-family="Barlow">${SLEEP_GOAL}h target</text>
+    <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--hair)"/>
+    ${days.map((d,i)=>`<text x="${L+i*bw+bw/2}" y="${H-10}" font-size="10" fill="#8A8A82" text-anchor="middle" font-family="Barlow">${s2d(d).getDate()}</text>`).join("")}
+  </svg>`;
+}
+
+$("slQual").querySelectorAll("button").forEach(b => b.onclick = () => {
+  const d = slDate(); if (!S.sleep) S.sleep = {};
+  const cur = S.sleep[d] || {hrs:null, q:null};
+  cur.q = cur.q === b.dataset.q ? null : b.dataset.q;
+  S.sleep[d] = cur; save(); drawSleep();
+});
+$("slSave").onclick = () => {
+  const d = slDate(), v = parseFloat($("slHrs").value);
+  if (isNaN(v) || v < 0 || v > 16) { toast("Enter hours between 0 and 16"); return; }
+  if (!S.sleep) S.sleep = {};
+  const cur = S.sleep[d] || {hrs:null, q:null};
+  cur.hrs = Math.round(v*4)/4;
+  S.sleep[d] = cur; save(); drawSleep(); toast("Sleep logged");
+};
+$("slDate").onchange = drawSleepForm;
+
+/* ============ diet adherence score ============ */
+function scDate(){ return ($("dDate") && $("dDate").value) || today(); }
+function drawScore(){
+  const d = scDate(), r = mealRec(d);
+  $("scPick").innerHTML = Array.from({length:10},(_,i)=>i+1).map(n =>
+    `<button data-n="${n}" aria-pressed="${r.score===n}">${n}</button>`).join("");
+  $("scPick").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const rec = mealRec(scDate()), n = +b.dataset.n;
+    rec.score = rec.score === n ? null : n;
+    save(); drawScore();
+  });
+  const week = Array.from({length:7},(_,i)=>addD(d,-i)).map(x => mealRec(x).score).filter(v => v != null);
+  $("scAvg").textContent = week.length ? `${(week.reduce((a,b)=>a+b,0)/week.length).toFixed(1)} average over the last 7 days` : "no scores yet this week";
+}
+
+/* ============ report ============ */
+let REP_N = 7;
+const repDates = n => Array.from({length:n},(_,i)=>addD(today(), i-(n-1)));
+const planWeightOn = d => Math.max(S.settings.start - S.settings.rate*diffD(PROGRAM_START, d)/7, S.settings.target);
+
+function stripHTML(dates, scoreFn, titleFn){
+  return `<div class="dstrip" style="grid-template-columns:repeat(${dates.length},1fr)">` +
+    dates.map(d => {
+      const sc = scoreFn(d);
+      const s = sc == null ? "" : `data-s="${sc}"`;
+      return `<i ${s} data-t="${d===today()?1:0}" title="${esc(titleFn(d))}"></i>`;
+    }).join("") + `</div>`;
+}
+function miniLine(vals){
+  const got = vals.map((v,i)=>({v,i})).filter(x => x.v != null);
+  if (got.length < 2) return `<div class="sub2" style="margin-top:9px">not enough logged to draw a line yet</div>`;
+  const W = 300, H = 46, L=2, R=2, T=6, B=6;
+  const n = vals.length, x = i => L + i/(n-1)*(W-L-R);
+  const lo = Math.min(...got.map(g=>g.v)), hi = Math.max(...got.map(g=>g.v));
+  const span = hi - lo || 1;
+  const y = v => T + (1 - (v-lo)/span)*(H-T-B);
+  const pts = got.map(g => `${x(g.i)},${y(g.v)}`).join(" ");
+  return `<svg class="snapline" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none">
+    <polyline points="${pts}" fill="none" stroke="var(--lane)" stroke-width="2"/>
+    ${got.map(g=>`<circle cx="${x(g.i)}" cy="${y(g.v)}" r="2.2" fill="var(--ink)"/>`).join("")}
+  </svg>`;
+}
+
+function repWorkout(dates){
+  const set = new Set(dates);
+  const rows = scan().filter(r => set.has(r.date));
+  const train = rows.filter(r => !r.rest);
+  const doneN = train.filter(r => r.state === "full").length;
+  const partN = train.filter(r => r.state === "part").length;
+  const missN = train.length - doneN - partN;
+  const crSet = dates.filter(d => crKey(d) !== "off");
+  const crDoneN = crSet.filter(d => crDone(d)).length;
+  const scoreOf = d => {
+    const r = rows.find(x => x.date === d);
+    if (!r || r.rest) return null;
+    return r.state === "full" ? 3 : r.state === "part" ? 1 : 0;
+  };
+  const titleOf = d => {
+    const r = rows.find(x => x.date === d);
+    const lbl = !r ? "not in the program yet" : r.rest ? "rest day" : r.state === "full" ? "logged" : r.state === "part" ? "partly logged" : "missed";
+    return `${pretty(d)} \u00b7 ${lbl}`;
+  };
+  return {doneN, partN, missN, total:train.length, crDoneN, crTotal:crSet.length, strip:stripHTML(dates, scoreOf, titleOf)};
+}
+function repSleep(dates){
+  const vals = dates.map(d => { const r = slRec(d); return r ? r.hrs : null; });
+  const got = vals.filter(v => v != null);
+  const avg = got.length ? got.reduce((a,b)=>a+b,0)/got.length : null;
+  const scoreOf = d => { const r = slRec(d); if (!r || r.hrs == null) return null;
+    return r.hrs >= SLEEP_GOAL ? 3 : r.hrs >= SLEEP_GOAL*0.8 ? 1 : 0; };
+  const titleOf = d => { const r = slRec(d); return `${pretty(d)} \u00b7 ${r && r.hrs != null ? r.hrs+"h"+(r.q?" \u00b7 "+QLAB[r.q]:"") : "not logged"}`; };
+  return {avg, loggedN:got.length, total:dates.length, strip:stripHTML(dates, scoreOf, titleOf), line:miniLine(vals)};
+}
+function repDiet(dates){
+  const scores = dates.map(d => mealRec(d).score);
+  const got = scores.filter(v => v != null);
+  const avgScore = got.length ? got.reduce((a,b)=>a+b,0)/got.length : null;
+  const calPct = dates.map(d => {
+    const r = S.meals[d];
+    const any = r && (Object.keys(r.done||{}).length || (r.extras||[]).length);
+    if (!any) return null;
+    const {cal, t} = fuelTotals(d);
+    return t.cal ? Math.round(cal/t.cal*100) : null;
+  });
+  const gotC = calPct.filter(v => v != null);
+  const avgCalPct = gotC.length ? Math.round(gotC.reduce((a,b)=>a+b,0)/gotC.length) : null;
+  const scoreOf = d => { const v = mealRec(d).score; if (v == null) return null; return v>=8?3:v>=5?1:0; };
+  const titleOf = d => { const v = mealRec(d).score; return `${pretty(d)} \u00b7 ${v!=null?v+"/10":"not scored"}`; };
+  return {avgScore, loggedN:got.length, total:dates.length, avgCalPct, strip:stripHTML(dates, scoreOf, titleOf)};
+}
+function repWeight(dates){
+  const logged = dates.filter(d => S.weights[d] != null);
+  const first = logged.length ? S.weights[logged[0]] : null;
+  const last = logged.length ? S.weights[logged[logged.length-1]] : null;
+  const delta = (first != null && last != null) ? last - first : null;
+  const vsplan = last != null ? planWeightOn(dates[dates.length-1]) - last : null;
+  const vals = dates.map(d => S.weights[d] != null ? S.weights[d] : null);
+  return {first, last, delta, loggedN:logged.length, total:dates.length, vsplan, line:miniLine(vals)};
+}
+
+function drawReport(){
+  const dates = repDates(REP_N);
+  $("repRange").textContent = `${pretty(dates[0])} \u2013 ${pretty(dates[dates.length-1])}`;
+
+  const w = repWorkout(dates), sl = repSleep(dates), di = repDiet(dates), we = repWeight(dates);
+
+  let html = "";
+
+  html += `<div class="snapblk"><div class="top"><b>Workouts</b><em>${w.doneN}/${w.total} logged</em></div>
+    <div class="big">${w.total ? Math.round(w.doneN/w.total*100) : 0}<small>%</small></div>
+    <div class="sub2">${w.doneN} full, ${w.partN} partial, ${w.missN} missed${w.crTotal?` \u00b7 cricket ${w.crDoneN}/${w.crTotal}`:""}</div>
+    ${w.strip}</div>`;
+
+  html += `<div class="snapblk"><div class="top"><b>Sleep</b><em>${sl.loggedN}/${sl.total} nights logged</em></div>
+    <div class="big">${sl.avg!=null?sl.avg.toFixed(1):"\u2014"}<small> h avg, ${SLEEP_GOAL}h target</small></div>
+    <div class="sub2">${sl.avg!=null ? (sl.avg>=SLEEP_GOAL ? "at or above target on average" : `${(SLEEP_GOAL-sl.avg).toFixed(1)} h under target on average`) : "nothing logged in this window"}</div>
+    ${sl.line}${sl.strip}</div>`;
+
+  html += `<div class="snapblk"><div class="top"><b>Diet adherence</b><em>${di.loggedN}/${di.total} days scored</em></div>
+    <div class="big">${di.avgScore!=null?di.avgScore.toFixed(1):"\u2014"}<small> / 10</small></div>
+    <div class="sub2">${di.avgCalPct!=null ? `averaging ${di.avgCalPct}% of the calorie target on logged days` : "no meals logged in this window"}</div>
+    ${di.strip}</div>`;
+
+  html += `<div class="snapblk"><div class="top"><b>Weight</b><em>${we.loggedN}/${we.total} days logged</em></div>
+    <div class="big">${we.last!=null?we.last.toFixed(1):"\u2014"}<small> lb latest</small></div>
+    <div class="sub2">${we.delta!=null ? `${we.delta<=0?"down":"up"} ${Math.abs(we.delta).toFixed(1)} lb over the window` : "not enough logged to show a change"}${we.vsplan!=null?` \u00b7 ${we.vsplan>=0?`${we.vsplan.toFixed(1)} lb ahead of plan`:`${Math.abs(we.vsplan).toFixed(1)} lb behind plan`}`:""}</div>
+    ${we.line}</div>`;
+
+  $("repSnap").innerHTML = html;
+  $("repTitle").textContent = `Last ${REP_N} days`;
+}
+
+$("repWin").querySelectorAll("button").forEach(b => b.onclick = () => {
+  REP_N = +b.dataset.n;
+  $("repWin").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  drawReport();
+});
+$("repNote").value = S.reportNote || "";
+$("repNote").oninput = e => { S.reportNote = e.target.value; save(); };
+$("repCopy").onclick = () => {
+  const dates = repDates(REP_N);
+  const w = repWorkout(dates), sl = repSleep(dates), di = repDiet(dates), we = repWeight(dates);
+  const lines = [
+    `Training snapshot \u2014 ${pretty(dates[0])} to ${pretty(dates[dates.length-1])}`,
+    ``,
+    `Workouts: ${w.doneN}/${w.total} logged (${w.total?Math.round(w.doneN/w.total*100):0}%), ${w.partN} partial, ${w.missN} missed${w.crTotal?`; cricket ${w.crDoneN}/${w.crTotal}`:""}`,
+    `Sleep: ${sl.avg!=null?sl.avg.toFixed(1)+" h avg":"not logged"} vs ${SLEEP_GOAL} h target, ${sl.loggedN}/${sl.total} nights logged`,
+    `Diet adherence: ${di.avgScore!=null?di.avgScore.toFixed(1)+"/10 avg":"not scored"}${di.avgCalPct!=null?`, averaging ${di.avgCalPct}% of calorie target`:""}, ${di.loggedN}/${di.total} days scored`,
+    `Weight: ${we.last!=null?we.last.toFixed(1)+" lb latest":"not logged"}${we.delta!=null?`, ${we.delta<=0?"down":"up"} ${Math.abs(we.delta).toFixed(1)} lb over the window`:""}${we.vsplan!=null?`, ${we.vsplan>=0?`${we.vsplan.toFixed(1)} lb ahead of plan`:`${Math.abs(we.vsplan).toFixed(1)} lb behind plan`}`:""}`
+  ];
+  if ((S.reportNote||"").trim()) lines.push(``, `Note: ${S.reportNote.trim()}`);
+  const text = lines.join("\n");
+  const done = () => toast("Copied \u2014 paste it into a message");
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+};
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch(e){ toast("Could not copy \u2014 select and copy the Report tab text manually"); }
+  document.body.removeChild(ta);
+}
+
 /* ============ cricket ============ */
 const CRICKET = [
   {k:"bat_astro", n:"Batting session — astro",  g:"Batting"},
@@ -1937,10 +2244,12 @@ function go(v){
   if (v==="steps") drawSteps();
   if (v==="diet"){ drawDietCal(); drawFuel(); }
   if (v==="cricket") drawCricket();
+  if (v==="steps") drawSleep();
+  if (v==="report") drawReport();
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
 
-function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); drawFuel(); drawTodayFuel(); drawCricket(); drawTodayCricket(); }
+function redrawAll(){ drawHeader(); drawToday(); drawWeekStrip(); drawPlan(); drawTrends(); drawWeight(); drawSteps(); drawDietCal(); drawFuel(); drawTodayFuel(); drawCricket(); drawTodayCricket(); drawSleep(); drawReport(); }
 
 /* quick save on Today */
 $("qsave").onclick = () => {
@@ -1969,7 +2278,7 @@ $("copyUrl").onclick = async () => {
   try { await navigator.clipboard.writeText($("urlTpl").textContent); toast("Address copied"); }
   catch(e){ toast("Select the address and copy it by hand"); }
 };
-$("dDate").onchange = () => { drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); drawFuel(); };
+$("dDate").onchange = () => { drawDiet($("dietPicker"), fuelDate(), refreshDiet); drawDietCal(); drawFuel(); drawScore(); };
 $("impOpen").onclick = impOpen;
 $("crDate").onchange = () => drawCricket();
 $("crPick").onchange = () => {
@@ -2028,7 +2337,7 @@ $("impFile").onchange = e => {
 };
 $("wipe").onclick = () => {
   if (!confirm("Erase every weight, step, meal and session log on this device?")) return;
-  S = {settings:DEFAULTS(), weights:{}, steps:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{}};
+  S = {settings:DEFAULTS(), weights:{}, steps:{}, sleep:{}, diet:{}, meals:{}, cricket:{}, roll:{}, days:{}, custom:{}, swap:{}, reportNote:""};
   save(); redrawAll(); toast("Everything erased");
 };
 
@@ -2057,14 +2366,16 @@ function urlImport(){
   $("wGoalLbl").textContent = `${START_W} lb \u2192 ${TARGET_W} lb by ${pretty(GOAL_DATE)} 2027`;
   urlImport();
   const t = today();
-  $("wDate").value = t; $("sDate").value = t; $("dDate").value = t; $("crDate").value = t;
+  $("wDate").value = t; $("sDate").value = t; $("dDate").value = t; $("crDate").value = t; $("slDate").value = t;
   $("wVal").value = S.weights[t] ?? ""; $("sVal").value = S.steps[t] ?? "";
   if (!S.meals) S.meals = {};
   if (!S.cricket) S.cricket = {};
   if (!S.roll) S.roll = {};
+  if (!S.sleep) S.sleep = {};
+  if (S.reportNote == null) S.reportNote = "";
   drawHeader(); drawToday(); drawWeekStrip();
   drawDiet($("dietPicker"), t, refreshDiet);
-  drawDietCal(); drawFuel(); drawCricket();
+  drawDietCal(); drawFuel(); drawCricket(); drawSleep();
 })();
 </script>
 </body>
