@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B2430">
-<title>Race Card — HYROX, 20 Nov</title>
+<title>Race Card — HYROX, 18 &amp; 22 Nov</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
@@ -346,7 +346,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
 
   <div class="card">
     <div class="pad grid2">
-      <div><label class="f" for="qw">Weight (lb)</label><input id="qw" type="number" step="0.1" inputmode="decimal" placeholder="228.0"></div>
+      <div><label class="f" for="qw">Weight (lb)</label><input id="qw" type="number" step="0.1" inputmode="decimal" placeholder="227.3"></div>
       <div><label class="f" for="qs">Steps</label><input id="qs" type="number" inputmode="numeric" placeholder="10000"></div>
     </div>
     <div class="btnrow"><button class="btn solid" id="qsave">Save today's numbers</button></div>
@@ -426,17 +426,17 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <div class="legend">
       <span><i style="border-color:var(--ink)"></i>Logged</span>
       <span><i style="border-color:var(--lane)"></i>7-day average</span>
-      <span><i style="border-color:var(--signal);border-top-style:dashed"></i>2 lb/week goal line</span>
-      <span><i style="border-color:#B9C9BC;border-top-width:8px"></i>1.5–2 lb/week band</span>
+      <span><i style="border-color:var(--signal);border-top-style:dashed"></i>Plan</span>
+      <span><i style="border-color:#B9C9BC;border-top-width:8px"></i>Plan to 1.5 lb/week</span>
     </div>
     <div class="stats" id="wStats"></div>
   </div>
   <div class="card">
     <div class="hd"><h3>About the goal line</h3></div>
     <div class="note" style="padding-top:12px">
-      2 lb a week from 228 lb puts you at 185 lb on Friday 29 January 2027 — sixty-one days after the race. That rate sits at the fast end of what people hold without giving up strength or top-end speed, so treat it as a ceiling rather than a floor. The green band shows 1.5 to 2 lb a week, and anywhere inside it is a good week.
+      <span id="wNote1"></span>
       <br><br>
-      One thing to plan around: a deep deficit through October will cost you sled and wall-ball output on 20 November. You'll be around 205 lb on the 2 lb line by race day. If the sessions start feeling flat, ease to the slow edge of the band through the taper and make it back up in December and January.
+      <span id="wNote2"></span>
     </div>
   </div>
 </section>
@@ -619,7 +619,7 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
     <div class="hd"><h3>This week</h3><div class="sub" id="crWkSub"></div></div>
     <div class="pad" id="crWeek"></div>
     <div class="btnrow"><button class="btn ghost" id="crRoll">Re-roll the days you have not touched</button></div>
-    <div class="note">Sunday takes the game, Tuesday lines up with your cricket and upper day, Saturday is nets. The two off days land on whichever weekdays the roll picks.</div>
+    <div class="note">Sunday takes the game, Tuesday lines up with your cricket and upper day, Saturday is nets. The two off days land on whichever weekdays the roll picks. Race week is one light skills session, and the Sunday before it swaps the match for fielding. You can change any day from the dropdown.</div>
   </div>
 
   <div class="card">
@@ -674,9 +674,9 @@ nav button[aria-current="true"]{color:#FBFBF9;border-top-color:var(--sand)}
   </div>
 
   <div class="card">
-    <div class="hd"><h3>The five phases</h3><div class="sub">228 lb → 190 lb<br>by 28 Feb 2027</div></div>
+    <div class="hd"><h3>The six phases</h3><div class="sub" id="phSub"></div></div>
     <div class="pad plist" id="phaseList"></div>
-    <div class="note">The plan lands nearer 199 lb than 190. The last ten pounds come off at about half the rate of the first twenty, so treat 190 as the target and 195 as a good outcome.</div>
+    <div class="note" id="phFoot"></div>
   </div>
 
   <div class="sec"><h2>Daily checks <small>no added sugar · calories in range · creatine</small></h2><hr class="rule"></div>
@@ -738,7 +738,22 @@ const Store = {
 
 /* ============ dates ============ */
 const PROGRAM_START = "2026-08-31";      // Monday of week 1
-const RACE = "2026-11-20";               // Friday
+const RACE = "2026-11-18";               // Wednesday: HYROX singles
+const RACE2 = "2026-11-22";              // Sunday: HYROX doubles
+const RESET_D = "2026-10-04", RESET_W = 227.3;   // weigh-in the plan was re-based on
+/* planned body weight: holds through the two race weeks and the holidays, loses on the three deficit blocks */
+const PLAN_W = [[PROGRAM_START,228],[RESET_D,RESET_W],["2026-11-08",222.3],["2026-11-29",222.3],
+                ["2026-12-19",218.3],["2027-01-03",218.3],["2027-02-28",207.1]];
+function planWeight(d){
+  if (d <= PLAN_W[0][0]) return PLAN_W[0][1];
+  for (let i=1;i<PLAN_W.length;i++){
+    if (d <= PLAN_W[i][0]){
+      const a = PLAN_W[i-1], b = PLAN_W[i], span = diffD(a[0], b[0]);
+      return a[1] + (b[1]-a[1]) * (span ? diffD(a[0], d)/span : 0);
+    }
+  }
+  return PLAN_W[PLAN_W.length-1][1];
+}
 const START_W = 228, TARGET_W = 190, RATE = 1.5;   // lb, lb, lb per week
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -758,6 +773,14 @@ const phaseOf = w => w<=4 ? "Base" : w<=8 ? "Build" : w<=11 ? "Sharpen" : "Race 
 
 /* ============ the plan ============ */
 function P(w){
+  if (w === 11) return {   // taper: intensity stays, volume drops about a third
+    ph:"Sharpen", i:2,
+    heavy:"3 × 5 @ RPE 7, stop with 3 reps in the tank", acc:"2 × 8",
+    sled:"4 × 25 m at race weight, full rest", ski:"3 × 750 m at race pace / 2 min rest",
+    row:"3 × 750 m at race pace / 2 min rest", wb:"3 × 20 unbroken", bbj:"3 × 15 m",
+    run:"4 × 800 m at race pace / 90 s jog", carry:"2 × 100 m at race weight",
+    lunge:"100 m sandbag, one round", core:"2 × 12"
+  };
   const ph = phaseOf(w);
   const i = ph==="Base" ? 0 : ph==="Build" ? 1 : ph==="Sharpen" ? 2 : 3;
   return {
@@ -791,13 +814,12 @@ function satSession(w){
   if (w===10) return {t:"Three-quarter simulation", f:"6 runs, 6 stations", items:[
     ["Stations 1–6 with 1 km between","Ski, sled push, sled pull, burpee broad jump, row, farmer's carry"],
     ["Hold race pace","Stop if the runs fall off by more than 30 s"],
-    ["Note the splits","This is your pacing plan for the 20th"]]};
+    ["Note the splits","This is your pacing plan for the 18th"]]};
   if (w===11) return {t:"Race-pace sharpener", f:"Short and clean", items:[
     ["3 × [1 km run + 1 station]","Ski, wall balls, sled push — at race effort"],
     ["Full recovery between","4–5 min walking"],
-    ["Rehearse transitions","Practise the walk-in, the grip changes, the breathing reset"]]};
-  if (w===12) return {t:"Recover", f:"Day after the race", items:[
-    ["Walk","30–40 min, easy"],["Shoulders and hips","Full mobility flow"],["Eat and sleep","The block is done"]]};
+    ["Rehearse transitions","Practise the walk-in, the grip changes, the breathing reset"],
+    ["Doubles split","Agree with your partner who takes which share of each station, and who leads each run"]]};
   return {t:"Compromised running", f:"Runs off tired legs", items:[
     ["4 rounds","1 km run straight into one station"],
     ["Stations","Rotate: wall balls 50 · sandbag lunge 50 m · burpee broad jump 40 m · farmer's carry 100 m"],
@@ -807,18 +829,37 @@ function satSession(w){
 function planFor(dateStr){
   const w = weekOf(dateStr), p = P(w), dow = s2d(dateStr).getDay();
   const head = {week:w, phase:p.ph};
-  if (dateStr === RACE) return {...head, t:"HYROX — race day", f:"8 runs, 8 stations", race:true, items:[
+  if (dateStr === RACE) return {...head, t:"HYROX singles — race day", f:"8 runs, 8 stations", race:true, items:[
     ["Arrive early","Bag drop, warm-up area, know your corral time"],
     ["Warm-up","10 min easy jog, band shoulder work, 20 wall balls, 2 short sled pushes"],
     ["Pacing","First 1 km 15–20 s slower than you feel like running"],
     ["Fuel","Gel before the start and one around station 4–5"],
-    ["Doubles","If you're running both, save the legs on the lunges"]]};
+    ["Four days to doubles","Decide before the start how hard you are going to push the lunges and wall balls. Sunday is the next one"]]};
+  if (dateStr === RACE2) return {...head, t:"HYROX doubles — race day", f:"8 runs together, stations shared", race:true, items:[
+    ["Arrive early","Bag drop, warm-up area, know your corral time"],
+    ["Warm-up","10 min easy jog, band shoulder work, 10 wall balls, one light sled length. Singles was Wednesday, so build in slowly"],
+    ["How it works","You run all 8 km with your partner and share the station work. Settle the split in the warm-up, not on the floor"],
+    ["Legs","Expect stiffness for the first 2 km and let it settle. Hand your partner the heavier shares if the hips or shoulder are sore"],
+    ["Fuel","Gel before the start and one around station 4–5"]]};
   if (w===12){
     if (dow===1) return {...head, t:"Primer — legs", f:"Short", items:[["Back squat","2 × 5 @ RPE 6"],["Sled push","2 × 25 m, race weight"],["Wall balls","2 × 15"],["Walk","20 min"]]};
-    if (dow===2) return {...head, t:"Cricket touch + shakeout", f:"Easy", items:[["Batting","20 min throwdowns, no volume"],["Shoulder band work","2 rounds"],["Run","20 min easy with 4 strides"]]};
-    if (dow===3) return {...head, t:"Race primer", f:"15 min total", items:[["SkiErg","2 × 250 m at race pace"],["Row","2 × 250 m"],["Burpee broad jump","2 × 6"],["Stop early","Leave feeling fresh"]]};
-    if (dow===4) return {...head, t:"Rest and travel", f:"Nothing hard", rest:true, items:[["Walk","20 min"],["Mobility","10 min, shoulders and hips"],["Kit check","Shoes, gloves, belt, gels, bib"],["Carbs up","Extra 100–150 g today"]]};
-    if (dow===5) return planFor(RACE);
+    if (dow===2) return {...head, t:"Cricket touch + shakeout", f:"Day before singles", items:[
+      ["Batting","20 min throwdowns, no volume"],["Shoulder band work","2 rounds"],
+      ["Run","20 min easy with 4 strides"],["Kit check","Shoes, gloves, belt, gels, bib"],
+      ["Carbs up","Extra 100–150 g today, early night"]]};
+    if (dow===4) return {...head, t:"Recovery — no running", f:"Day after singles", rest:true, items:[
+      ["Walk","30–40 min, easy. Nothing faster than a walk today"],
+      ["Mobility","15 min, hips, calves, shoulders"],
+      ["Eat","Protein and carbs at every meal, and plenty of fluid and salt"],
+      ["Sleep","Early night. This is the session that makes Sunday work"]]};
+    if (dow===5) return {...head, t:"Opener", f:"Optional, 20 min", items:[
+      ["Easy jog","15 min, truly easy"],["Strides","4 × 20 s, relaxed"],
+      ["Activation","10 wall balls, one empty sled length, SkiErg 2 × 250 m easy"],
+      ["Stop early","If anything is sore, walk instead"]]};
+    if (dow===6) return {...head, t:"Rest and travel", f:"Nothing hard", rest:true, items:[
+      ["Walk","20 min"],["Mobility","10 min, shoulders and hips"],
+      ["Kit check","Shoes, gloves, belt, gels, bib"],["Agree the split","Run through who takes which share of each station with your partner"],
+      ["Carbs up","Extra 100–150 g today, early night"]]};
   }
   const sep = S.settings.split !== "mixed";
   if (sep) switch(dow){
@@ -846,7 +887,7 @@ function planFor(dateStr){
         ["Sled pull", p.sled],
         ["Farmer's carry", p.carry],
         ["Sandbag lunges", p.lunge],
-        ["Compromised runs","3 × [1 km at race pace, straight into one station]"],
+        ["Compromised runs", w===11 ? "2 × [1 km at race pace, straight into one station]" : "3 × [1 km at race pace, straight into one station]"],
         ["Cool down","10 min walk, hips and forearms"]]};
       return {...head, t:"Strength — posterior chain", f:"Heavy, full rest, no conditioning", items:[
         ["Warm-up","500 m easy row, banded good mornings, two build-up sets"],
@@ -971,11 +1012,12 @@ function dayRec(date){ return S.days[date] || (S.days[date] = {done:[], complete
 
 /* ============ header ============ */
 function drawHeader(){
-  const n = diffD(today(), RACE);
-  $("cDays").textContent = n > 0 ? n : n === 0 ? "0" : Math.abs(n);
-  $("cLabel").textContent = n > 1 ? "days to HYROX" : n === 1 ? "day to HYROX" : n === 0 ? "race day" : "days since HYROX";
+  const nr = diffD(today(), RACE) >= 0 ? {d:RACE, k:"singles"} : {d:RACE2, k:"doubles"};
+  const n = diffD(today(), nr.d);
+  $("cDays").textContent = Math.abs(n);
+  $("cLabel").textContent = n > 1 ? `days to HYROX ${nr.k}` : n === 1 ? `day to HYROX ${nr.k}` : n === 0 ? `${nr.k} race day` : n === -1 ? "day since HYROX" : "days since HYROX";
   const w = weekOf(today());
-  $("cSub").textContent = n >= 0 ? `Friday 20 November 2026 · week ${Math.min(Math.max(w,1),12)} of 12, ${phaseOf(w).toLowerCase()}` : "Friday 20 November 2026";
+  $("cSub").textContent = n >= 0 ? `Singles Wed 18 Nov · doubles Sun 22 Nov · week ${Math.min(Math.max(w,1),12)} of 12, ${phaseOf(w).toLowerCase()}` : "Singles 18 November · doubles 22 November 2026";
   const total = 12*7, gone = Math.min(Math.max(diffD(PROGRAM_START, today()),0), total);
   $("laneFill").style.width = (gone/total*100).toFixed(1) + "%";
   $("laneTicks").innerHTML = Array.from({length:12},(_,i)=>`<span class="${i+1===w?"now":""}">${i+1}</span>`).join("");
@@ -1164,16 +1206,20 @@ function drawWeight(){
   const last = dates.length ? S.weights[dates[dates.length-1]] : start;
   const lost = start - last;
   const toGo = Math.max(last - target, 0);
-  // where the 2 lb/week line says you should be today
-  const onLine = Math.max(start - rate*diffD(t0, today())/7, target);
+  // where the phased plan says you should be today
+  const onLine = planWeight(today());
   const gap = onLine - last;   // positive = ahead of the line
   $("wStats").innerHTML = `
     <div><b>${last.toFixed(1)}</b><span>latest, ${dates.length?pretty(dates[dates.length-1]):"not logged yet"}</span></div>
     <div><b>${lost>=0?"−":"+"}${Math.abs(lost).toFixed(1)}</b><span>from ${start} lb</span></div>
     <div><b>${(toGo/rate).toFixed(1)}</b><span>weeks to ${target} lb at ${rate} lb/week</span></div>`;
+  const endW = planWeight(S.settings.goalDate);
+  const lateD = new Date(s2d(S.settings.goalDate).getTime() + Math.ceil(Math.max(endW - target, 0)/1.4)*7*86400000);
+  $("wNote1").textContent = `The dashed line is the plan, not a straight run to ${target} lb. It holds weight through the two race weeks and the holidays, and loses on the build, push and final blocks. From ${RESET_W} lb on ${pretty(RESET_D)} it reaches about ${Math.round(endW)} lb by ${pretty(S.settings.goalDate)}. ${target} lb stays the target; at the same pace it arrives around ${MON[lateD.getMonth()]} ${lateD.getFullYear()}.`;
+  $("wNote2").textContent = `The green band runs from the plan, carried on from your latest weigh-in, up to 1.5 lb a week. Anywhere inside it is a good week. Pushing harder than that through the build will cost you sled and wall-ball output on 18 and 22 November, so if sessions go flat, sit at the slow edge until after the doubles.`;
   $("wPace").textContent = dates.length
-    ? (Math.abs(gap) < 0.5 ? "level with the 2 lb/week line"
-      : gap > 0 ? `${gap.toFixed(1)} lb ahead of the line` : `${Math.abs(gap).toFixed(1)} lb behind the line`)
+    ? (Math.abs(gap) < 0.5 ? "level with the plan"
+      : gap > 0 ? `${gap.toFixed(1)} lb ahead of plan` : `${Math.abs(gap).toFixed(1)} lb behind plan`)
     : "7-day average";
 
   // chart window: program start to goal date
@@ -1186,10 +1232,11 @@ function drawWeight(){
   const X = ts => L + (ts - x0)/(x1 - x0) * (W-L-R);
   const Y = v => T + (yMax - v)/(yMax - yMin) * (H-T-B);
 
-  // realistic band, 1.5 – 2.0 lb/week from the latest weigh-in
+  // band: the plan carried on from your latest weigh-in, up to 1.5 lb/week
   const anchorD = dates.length ? dates[dates.length-1] : today();
   const wks = Math.max(diffD(anchorD, S.settings.goalDate)/7, 0.1);
-  const slow = Math.max(last - 1.5*wks, target - 4), fast = Math.max(last - 2.0*wks, target - 4);
+  const slow = Math.max(last + (planWeight(S.settings.goalDate) - planWeight(anchorD)), target - 4);
+  const fast = Math.max(last - 1.5*wks, target - 4);
   const band = `M${X(s2d(anchorD).getTime())},${Y(last)} L${X(x1)},${Y(slow)} L${X(x1)},${Y(fast)} Z`;
 
   let grid = "";
@@ -1201,7 +1248,7 @@ function drawWeight(){
       ticks += `<line x1="${px}" x2="${px}" y1="${T}" y2="${H-B}" stroke="#E6E6DF"/><text x="${px+3}" y="${H-8}" font-size="11" fill="#8A8A82" font-family="Barlow">${MON[d.getMonth()]}</text>`;
     } }
 
-  const goal = `M${X(s2d(t0).getTime())},${Y(start)} L${X(x1)},${Y(target)}`;
+  const goal = "M" + PLAN_W.map(w => X(s2d(w[0]).getTime()) + "," + Y(w[1])).join(" L");
   const pts = dates.map(d=>`${X(s2d(d).getTime())},${Y(S.weights[d])}`).join(" ");
   // 7-day moving average
   const avg = [];
@@ -1211,9 +1258,11 @@ function drawWeight(){
     ${grid}${ticks}
     <path d="${band}" fill="#C6DACD" opacity=".55"/>
     <path d="${goal}" stroke="var(--signal)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+    <line x1="${L}" x2="${W-R}" y1="${Y(target)}" y2="${Y(target)}" stroke="#9AA3AD" stroke-dasharray="2 4"/>
+    <text x="${W-R}" y="${Y(target)-4}" font-size="11" fill="#7A838D" text-anchor="end" font-family="Barlow">${target} lb target</text>
     <line x1="${L}" x2="${X(s2d(RACE).getTime())===X(s2d(RACE).getTime())?X(s2d(RACE).getTime()):L}" y1="0" y2="0" stroke="none"/>
     <line x1="${X(s2d(RACE).getTime())}" x2="${X(s2d(RACE).getTime())}" y1="${T}" y2="${H-B}" stroke="var(--sand)" stroke-width="2"/>
-    <text x="${X(s2d(RACE).getTime())-4}" y="${T+12}" font-size="11" fill="#A88735" text-anchor="end" font-family="Barlow">race</text>
+    <text x="${X(s2d(RACE).getTime())-4}" y="${T+12}" font-size="11" fill="#A88735" text-anchor="end" font-family="Barlow">races</text>
     ${avg.length>1?`<polyline points="${avg.join(" ")}" fill="none" stroke="var(--lane)" stroke-width="2"/>`:""}
     ${dates.map(d=>`<circle cx="${X(s2d(d).getTime())}" cy="${Y(S.weights[d])}" r="2.6" fill="var(--ink)"/>`).join("")}
     ${dates.length===0?`<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="14" fill="#9A9A92" font-family="Barlow">Log your first weigh-in to start the line</text>`:""}
@@ -1288,12 +1337,14 @@ const HT_CM = 180.34, AGE = 45, ACT = 1.5;
 const maintAt = lb => Math.round((10*(lb/2.2046) + 6.25*HT_CM - 5*AGE + 5) * ACT / 10) * 10;
 
 const PHASES = [
-  {id:"build", n:"Race build",     a:"2026-08-31", b:"2026-11-06", cal:2400, pro:195, fuel:false,
+  {id:"build", n:"Race build",     a:"2026-08-31", b:"2026-11-08", cal:2400, pro:195, fuel:false,
    x:"Moderate deficit through the hardest training block. Session quality wins over scale speed here."},
-  {id:"taper", n:"Taper",          a:"2026-11-07", b:"2026-11-20", cal:2900, pro:190, fuel:true,
-   x:"Calories back up, carbs up in the last five days. The scale will rise a pound or two — that is glycogen, not fat."},
-  {id:"push",  n:"Post-race push", a:"2026-11-21", b:"2026-12-19", cal:2250, pro:195, fuel:false,
-   x:"Deeper deficit now the race is done. Hold 12,000 steps a day so you can eat this much and still lose."},
+  {id:"taper", n:"Taper",          a:"2026-11-09", b:"2026-11-22", cal:2900, pro:190, fuel:true,
+   x:"Calories up to about maintenance for the two weeks around singles and doubles, with carbs up in the last five days. The scale will rise a pound or two. That is glycogen, not fat."},
+  {id:"recov", n:"Race recovery",  a:"2026-11-23", b:"2026-11-29", cal:2750, pro:190, fuel:true,
+   x:"Two races in five days. Eat at about maintenance, no deficit this week. Thanksgiving falls inside it, so eat it."},
+  {id:"push",  n:"Post-race push", a:"2026-11-30", b:"2026-12-19", cal:2250, pro:195, fuel:false,
+   x:"Deeper deficit now the racing is done. Hold 12,000 steps a day so you can eat this much and still lose."},
   {id:"hold",  n:"Holiday hold",   a:"2026-12-20", b:"2027-01-03", cal:2750, pro:190, fuel:true,
    x:"Planned maintenance, not a lapse. Eat at Christmas. This resets appetite and makes January work."},
   {id:"final", n:"Final block",    a:"2027-01-04", b:"2027-02-28", cal:2200, pro:195, fuel:false,
@@ -1505,6 +1556,9 @@ function drawFuel(){
   $("fMacros").innerHTML = macroHTML(d);
   $("fMicros").innerHTML = microHTML(d);
   drawScore();
+  { const endW = Math.round(planWeight(GOAL_DATE));
+    $("phSub").innerHTML = `${RESET_W} lb on ${pretty(RESET_D)}<br>plan reaches ~${endW} lb by 28 Feb`;
+    $("phFoot").textContent = `From ${RESET_W} lb the plan lands near ${endW} lb on 28 February, not ${TARGET_W}. The race weeks, Thanksgiving and the holidays are all maintenance, and the three deficit blocks carry the loss. ${TARGET_W} lb is still the target; it moves to the late spring unless the deficit blocks run faster than planned.`; }
 
   $("phaseCard").className = "phase" + (t.fuel ? " fuel" : "");
   $("phName").textContent = t.match ? "Match day · " + t.p.n : t.p.n;
@@ -1875,7 +1929,7 @@ function drawScore(){
 /* ============ report ============ */
 let REP_N = 7;
 const repDates = n => Array.from({length:n},(_,i)=>addD(today(), i-(n-1)));
-const planWeightOn = d => Math.max(S.settings.start - S.settings.rate*diffD(PROGRAM_START, d)/7, S.settings.target);
+const planWeightOn = d => planWeight(d);
 
 function stripHTML(dates, scoreFn, titleFn){
   return `<div class="dstrip" style="grid-template-columns:repeat(${dates.length},1fr)">` +
@@ -2045,10 +2099,15 @@ function rng(seed){
     return ((t ^ t>>>14) >>> 0) / 4294967296; };
 }
 function rollWeek(mon){
+  if (mon === mondayOf(RACE)){            // race week: one light skills session, everything else off
+    const o = {}; for (let i=0;i<7;i++) o[addD(mon,i)] = "off";
+    o[addD(mon,1)] = "shadow"; return o;
+  }
   const r = rng("cricket|" + mon + "|" + (S.roll && S.roll[mon] || 0));
   const pick = a => a[Math.floor(r()*a.length)];
   const out = {};
   out[addD(mon,6)] = pick(["t20","t20","t30","t40"]);            // Sunday, the training rest day
+  if (mon === addD(mondayOf(RACE),-7)) out[addD(mon,6)] = "field";   // three days before singles: no match
   out[addD(mon,1)] = pick(["bat_turf","bat_astro","machine"]);   // Tuesday, your cricket and upper day
   out[addD(mon,5)] = pick(["nets","nets","field"]);              // Saturday
   const week = [0,2,3,4].slice();                                // Mon, Wed, Thu, Fri
