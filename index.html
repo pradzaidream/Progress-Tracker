@@ -792,7 +792,8 @@ function P(w){
     row:   ["4 × 500 m / 90 s rest","5 × 750 m / 90 s rest","4 × 1000 m at race pace","2 × 500 m easy"][i],
     wb:    ["4 × 15","5 × 20","4 × 25 unbroken","2 × 15"][i],
     bbj:   ["4 × 10 reps","4 × 15 m","4 × 20 m","2 × 8 reps"][i],
-    run:   ["5 × 600 m / 2 min jog","6 × 800 m / 90 s jog","5 × 1000 m at race pace","3 × 400 m, sharp"][i],
+    run:   (w === 7 || w === 8) ? "5 × 1000 m at goal pace (6:00/km) / 90 s jog"
+           : ["5 × 600 m / 2 min jog","6 × 800 m / 90 s jog","5 × 1000 m at race pace","3 × 400 m, sharp"][i],
     carry: ["4 × 40 m","4 × 60 m","3 × 100 m at race weight","2 × 40 m"][i],
     lunge: ["3 × 20 steps, bodyweight","4 × 20 m with sandbag","100 m sandbag, 2 rounds","20 m, light bag"][i],
     core:  ["3 × 12","3 × 15","3 × 15 weighted","2 × 12"][i]
@@ -822,7 +823,9 @@ function satSession(w){
     ["Doubles split","Agree with your partner who takes which share of each station, and who leads each run"]]};
   return {t:"Compromised running", f:"Runs off tired legs", items:[
     ["4 rounds","1 km run straight into one station"],
-    ["Stations","Rotate: wall balls 50 · sandbag lunge 50 m · burpee broad jump 40 m · farmer's carry 100 m"],
+    ["Stations", w <= 7
+      ? "Rotate: sled push 2 × 25 m at a moderate weight · wall balls 50 · sandbag lunge 50 m · burpee broad jump 40 m"
+      : "Rotate: wall balls 50 · sandbag lunge 50 m · burpee broad jump 40 m · farmer's carry 100 m"],
     ["Pace","Runs at goal pace, stations unbroken"],
     ["Cricket alternative","A match this weekend replaces this session"]]};
 }
@@ -921,7 +924,7 @@ function planFor(dateStr){
       ["Warm-up","500 m row easy, 10 air squats, arm swings"],
       ["SkiErg", p.ski],
       ["Row", p.row],
-      ["Wall balls", p.wb + " (20 lb to 10 ft)"],
+      ["Wall balls", p.wb + " (13 lb to 10 ft)"],
       ["Burpee broad jump", p.bbj],
       ["Run intervals", p.run],
       ["Cool down","10 min walk, breathing down to nasal only"]]};
@@ -962,15 +965,15 @@ const SIM_SESSION = {
   t:"Full HYROX simulation", f:"8 runs, 8 stations, no stopping", items:[
   ["Warm-up","10 min easy jog, band shoulder work, 15 wall balls, 1 short sled push"],
   ["Run 1 + SkiErg","1 km, then 1000 m ski"],
-  ["Run 2 + Sled push","1 km, then 50 m at race weight (Open 152 kg loaded, Pro 202 kg)"],
-  ["Run 3 + Sled pull","1 km, then 50 m (Open 103 kg, Pro 153 kg)"],
+  ["Run 2 + Sled push","1 km, then 50 m at race weight (152 kg loaded)"],
+  ["Run 3 + Sled pull","1 km, then 50 m (103 kg loaded)"],
   ["Run 4 + Burpee broad jump","1 km, then 80 m"],
   ["Run 5 + Row","1 km, then 1000 m"],
-  ["Run 6 + Farmers carry","1 km, then 200 m (Open 2 × 24 kg, Pro 2 × 32 kg)"],
-  ["Run 7 + Sandbag lunges","1 km, then 100 m (Open 20 kg, Pro 30 kg)"],
-  ["Run 8 + Wall balls","1 km, then 100 reps to 10 ft"],
+  ["Run 6 + Farmers carry","1 km, then 200 m (2 × 24 kg)"],
+  ["Run 7 + Sandbag lunges","1 km, then 100 m (20 kg bag)"],
+  ["Run 8 + Wall balls","1 km, then 100 reps with the 13 lb ball to 10 ft"],
   ["Write down all 16 splits","Put them in the notes below — this is the whole point of the session"],
-  ["Check your division","Confirm current Open and Pro weights before you load anything"]]
+  ["Check the weights","These are the Open division loads. Confirm them against the current rules before you load anything"]]
 };
 const sameWeek = (a,b) => mondayOf(a) === mondayOf(b);
 function srcFor(date){
