@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>225 → 190 · Cricket Season Cut</title>
+<style id="app-style">
+:root{--navy:#0f1f3d;--navy2:#162a52;--navy3:#1f3a6e;--ink:#e9eef8;--mut:#9fb0d0;--org:#ff7a1a;--org2:#ffa45c;--ok:#3ccf91;--warn:#ffcc4d;--bad:#ff5d5d;--card:#13254a;--line:#2a4378}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--navy);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--navy) 80%,rgba(15,31,61,.9));padding:12px 14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.brand h1{font-size:18px;margin:0;letter-spacing:.2px}
+.brand h1 b{color:var(--org)}
+#sync{font-size:12px;color:var(--mut);white-space:nowrap}
+#sync.dirty{color:var(--warn)}
+#sync button{margin-left:6px}
+nav{display:flex;gap:2px;overflow-x:auto;margin-top:10px}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:9px 8px 11px;font-weight:600;font-size:14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ink);border-bottom-color:var(--org)}
+main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
+.card h2{font-size:16px;margin:0 0 8px}
+.card h3{font-size:14px;margin:12px 0 6px;color:var(--org2);text-transform:uppercase;letter-spacing:.6px}
+.mut{color:var(--mut)}.sm{font-size:12.5px}.org{color:var(--org)}.okc{color:var(--ok)}.warnc{color:var(--warn)}.badc{color:var(--bad)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{background:var(--navy2);border-radius:10px;padding:10px}
+.kpi .v{font-size:22px;font-weight:700}
+.kpi .l{font-size:12px;color:var(--mut)}
+button,.btn{background:var(--navy3);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-weight:600;font-size:14px;cursor:pointer}
+button.pri{background:var(--org);border-color:var(--org);color:#1a0d00}
+button.ghost{background:none}
+button:disabled{opacity:.5}
+input,select,textarea{background:var(--navy);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:15px;font-family:inherit}
+input[type=number]{width:96px}
+textarea{width:100%;min-height:60px}
+label.chk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
+label.chk:first-of-type{border-top:0}
+label.chk input{width:20px;height:20px;margin-top:1px;accent-color:var(--org);flex:none}
+.ex{display:grid;grid-template-columns:24px 1fr auto;gap:4px 10px;align-items:start;padding:9px 0;border-top:1px solid var(--line)}
+.ex input[type=checkbox]{width:20px;height:20px;accent-color:var(--org);margin-top:2px}
+.ex .nm{font-weight:600}
+.ex .rx{color:var(--org2);font-weight:700;white-space:nowrap;text-align:right}
+.ex .cue{grid-column:2/4;font-size:12.5px;color:var(--mut)}
+.ex .ld{grid-column:2/4}
+.ex .ld input{width:150px;padding:5px 8px;font-size:13px}
+.ex.done .nm{text-decoration:line-through;color:var(--mut)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--navy3)}
+.pill.o{background:var(--org);color:#1a0d00}
+.pill.g{background:rgba(60,207,145,.18);color:var(--ok)}
+.pill.y{background:rgba(255,204,77,.18);color:var(--warn)}
+.bar{height:8px;background:var(--navy);border-radius:9px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--org)}
+.datebar{display:flex;align-items:center;gap:6px;justify-content:space-between;margin-bottom:10px}
+.datebar .d{font-weight:700;font-size:16px;text-align:center;flex:1}
+.wk{display:grid;grid-template-columns:62px repeat(7,1fr);gap:4px;align-items:stretch;margin:4px 0}
+.wk .lab{font-size:11.5px;color:var(--mut);line-height:1.2;padding-top:4px}
+.cell{border-radius:8px;padding:4px 2px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;min-height:40px;position:relative}
+.cell .dn{font-size:10px;font-weight:500;opacity:.75;display:block}
+.cell.out{opacity:.18;cursor:default}
+.cell.today{border-color:var(--ink)}
+.cell .dot{position:absolute;top:3px;right:4px;width:6px;height:6px;border-radius:9px;background:var(--ok)}
+.t-str{background:#2b4c8f}.t-cri{background:#1d7a5a}.t-spd{background:#6b3fa0}.t-mat{background:var(--org);color:#1a0d00}.t-pri{background:#8a5a1e}.t-rec{background:#2c3d5c}.t-rst{background:#22324f;color:var(--mut)}.t-skl{background:#245f73}
+.legend{display:flex;flex-wrap:wrap;gap:6px;font-size:11.5px}
+.legend span{padding:2px 8px;border-radius:6px}
+.phase{border-left:4px solid var(--org);padding-left:10px;margin:14px 0 6px}
+.phase b{font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:600}
+.meal{background:var(--navy2);border-radius:10px;padding:10px;margin:8px 0}
+.meal .h{display:flex;justify-content:space-between;font-weight:700}
+.meal ul{margin:6px 0 0;padding-left:18px}
+.meal li{margin:3px 0}
+ul.tight{margin:4px 0;padding-left:18px}ul.tight li{margin:3px 0}
+.banner{background:rgba(255,122,26,.12);border:1px solid var(--org);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13.5px}
+.score{font-size:28px;font-weight:800}
+svg text{fill:var(--mut);font-size:10px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{padding:6px 10px;font-size:13px}
+.seg button.on{background:var(--org);color:#1a0d00;border-color:var(--org)}
+pre.rep{white-space:pre-wrap;background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;max-height:340px;overflow:auto}
+.hide{display:none!important}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--org);color:#1a0d00;padding:9px 16px;border-radius:99px;font-weight:700;z-index:9;font-size:14px}
+</style>
+</head>
+<body>
+<div id="shell"><header><div class="brand"><h1>225 <b>→</b> 190 · Season Cut</h1><div id="sync"></div></div><nav id="tabs"></nav></header><main id="view"></main><div id="toast" class="toast hide"></div></div>
+<script id="state" type="application/json">{}</script>
+<script id="app">
+(function(){
+'use strict';
+var SHELL = document.getElementById('shell').outerHTML;
+var STYLE = document.getElementById('app-style').outerHTML;
+var APP_SRC = document.getElementById('app').textContent;
+var TITLE = document.title;
+var LS_KEY = 'pd-season-cut-2027';
+
+/* ---------------- program constants ---------------- */
+var START = '2026-12-01', END = '2027-04-27', SEASON = '2027-03-15';
+var PHASES = [
+ {k:0,name:'Foundation',start:'2026-12-01',end:'2026-12-27',deficit:750,
+  focus:'Movement quality, work capacity and a hypertrophy base. 3×8–12, RPE 7. Holiday week (Dec 21–27) is a deload: hold weight, keep moving.'},
+ {k:1,name:'Strength Build',start:'2026-12-28',end:'2027-02-07',deficit:850,
+  focus:'Heavier compound lifts, 4×5–6, RPE 8. Biggest calorie deficit of the plan. Deload Feb 1–7.'},
+ {k:2,name:'Pre-season Power & Speed',start:'2027-02-08',end:'2027-03-14',deficit:700,
+  focus:'Convert strength to bat speed, first-step quickness and keeper agility. Jumps and throws before lifts, 3–4×3–5 lifted fast. Taper Mar 8–14.'},
+ {k:3,name:'In-season',start:'2027-03-15',end:'2027-04-27',deficit:600,
+  focus:'Keep strength with low volume (2–3×3–5), stay fresh for matches. Fuel match days properly; the cut continues on the other days.'}
+];
+var DELOADS = [['2026-12-21','2026-12-27','Holiday deload'],['2027-02-01','2027-02-07','Deload'],['2027-03-08','2027-03-14','Pre-season taper']];
+var MILESTONES = [['2026-12-01',225],['2026-12-27',218],['2027-02-07',207],['2027-03-14',199],['2027-04-27',190]];
+
+function E(n,rx,c,load){return {n:n,rx:rx,c:c||'',load:!!load};}
+var TEMPLATES = {
+ lowerA:{name:'Strength A — Lower body',short:'LOW',cls:'t-str',tag:'Strength',dur:'60–70 min',adj:0,diet:'train',blocks:[
+  {t:'Mobility prep · 8 min',items:[
+   E('90/90 hip switches',['2×8/side','2×8/side','2×8/side','2×8/side'],'Keeper hips: rotate slowly, sit tall.'),
+   E('Ankle rocks + deep squat hold',['2×10 + 45s','2×10 + 45s','2×10 + 45s','2×10 + 45s'],'Knee tracks over toes; heels down. Keeper stance depth.')]},
+  {t:'Power primer',items:[
+   E('Box jump or broad jump',['3×3 low box','3×3','4×3 max intent','3×3'],'Land soft, step down. Quality over height.')]},
+  {t:'Main lifts',items:[
+   E('Trap-bar deadlift',['3×8','4×5','4×3 fast','3×3'],'Brace, push the floor away. Leave 2 reps in reserve.',true),
+   E('Goblet squat → front squat',['3×10 goblet','4×6 front','3×4 front, fast up','2×4'],'Swap to goblet if wrists/shoulder complain.',true),
+   E('Bulgarian split squat',['3×10/leg','3×8/leg','3×6/leg','2×6/leg'],'Front shin vertical-ish; drive through mid-foot.',true),
+   E('Romanian deadlift',['3×10','3×8','3×6','2×6'],'Hips back, soft knees, hamstrings loaded.',true)]},
+  {t:'Durability',items:[
+   E('Copenhagen plank',['3×15s/side','3×20s/side','3×25s/side','2×20s/side'],'Adductor armour for keeping. Short lever (knee) to start.'),
+   E('Nordic hamstring eccentric',['3×3','3×5','3×5','2×4'],'Lower as slow as you can; hands catch. Sprint insurance.'),
+   E('Tibialis + calf raise',['2×15 each','2×15 each','2×15 each','2×12 each'],'Shin and ankle resilience for squatting behind stumps.')]}
+ ]},
+ upperB:{name:'Strength B — Upper body (shoulder-safe)',short:'UPP',cls:'t-str',tag:'Strength',dur:'55–65 min',adj:0,diet:'train',blocks:[
+  {t:'Shoulder prep · 6 min',items:[
+   E('Band pull-apart + face pull',['2×15 each','2×15 each','2×15 each','2×15 each'],'Thumbs back, squeeze shoulder blades.'),
+   E('Shoulder CARs + sleeper stretch',['1×5/side + 30s','1×5/side + 30s','1×5/side + 30s','1×5/side + 30s'],'Pain-free range only (frozen-shoulder rule).')]},
+  {t:'Main lifts',items:[
+   E('Half-kneeling landmine press',['3×10/side','4×8/side','3×5/side, fast','2×6/side'],'Shoulder-friendly pressing path. No behind-neck or heavy barbell overhead.',true),
+   E('Chest-supported DB row',['4×10','4×8','3×6','2×8'],'Pull elbows to back pockets.',true),
+   E('Neutral-grip DB bench',['3×10','4×6','3×5','2×6'],'Elbows ~45°. Stop short of any pinch.',true),
+   E('Neutral-grip pulldown / assisted pull-up',['3×10','4×6','3×6','2×6'],'Full hang only if shoulder allows.',true)]},
+  {t:'Batting power & trunk',items:[
+   E('Med-ball rotational scoop toss',['3×5/side','4×5/side','5×4/side max','3×4/side'],'Hips lead, hands follow — same sequence as a drive.'),
+   E('Pallof press',['3×10/side','3×10/side','3×8/side + hold','2×8/side'],'Anti-rotation: ribs down, no twisting.'),
+   E('Farmer carry',['3×30m','3×40m heavy','3×40m','2×30m'],'Grip for bat control; walk tall.',true),
+   E('Wrist roller / plate pinch',['2 sets','2 sets','2 sets','1–2 sets'],'Forearms for late wrist work and keeper gloves.')]}
+ ]},
+ powerC:{name:'Strength C — Full-body power',short:'PWR',cls:'t-str',tag:'Strength',dur:'50–60 min',adj:0,diet:'train',blocks:[
+  {t:'Prep · 6 min',items:[
+   E('World\'s greatest stretch + cossack squat',['2×5/side','2×5/side','2×5/side','2×5/side'],'Lateral hip range for keeping.')]},
+  {t:'Power',items:[
+   E('Med-ball slam / lateral bound',['3×5 / 3×4/side','4×5 / 3×4/side','4×4 / 4×4/side stick','3×3 / 3×3/side'],'Bound sideways, stick the landing — keeper first step.'),
+   E('Kettlebell swing',['4×12','4×10 heavy','5×6 explosive','3×6'],'Hip snap, not a squat.',true)]},
+  {t:'Strength',items:[
+   E('Landmine rotational press',['3×8/side','3×6/side','4×4/side fast','2×5/side'],'Pivot back foot like a pull shot.',true),
+   E('Reverse lunge',['3×10/leg','3×8/leg','3×6/leg','2×6/leg'],'Long step back, upright torso.',true),
+   E('Single-arm cable row',['3×12/side','3×10/side','3×8/side','2×8/side'],'Slight rotation at the end.',true),
+   E('Hip thrust',['3×12','4×8','3×6','2×8'],'Pause 1s at top.',true)]},
+  {t:'Core',items:[
+   E('Dead bug + side plank',['3×8/side + 30s','3×10/side + 40s','3×10/side + 45s','2×8 + 30s'],'Low back pressed down.')]}
+ ]},
+ cricket:{name:'Cricket session — nets + keeping',short:'CRK',cls:'t-cri',tag:'Cricket',dur:'90–120 min',adj:150,diet:'cricket',blocks:[
+  {t:'Before nets',items:[
+   E('Dynamic warm-up (skips, lunges, leg swings, strides)',['10 min','10 min','10 min','10 min'],'Never go straight into keeping or batting cold.'),
+   E('Keeper takes — standing back',['30 takes','40 takes','50 takes','40 takes'],'Stay low through the take, give with the hands.'),
+   E('Keeper takes — standing up to spin',['20 takes','30 takes','40 takes','30 takes'],'Head still, rise with the bounce.'),
+   E('Lateral dive + get-up',['2×3/side','3×4/side','3×5/side','2×4/side'],'Land on the side, not the shoulder joint. Pop back up to stance.')]},
+  {t:'Batting',items:[
+   E('Net batting with intent',['30 min','40 min','45 min, match scenarios','40 min'],'Set targets: leave well, rotate strike, boundary options.'),
+   E('Running between wickets: 2s & 3s',['4 reps','6 reps','6 reps full pads','4 reps'],'Sprint the first, turn low, slide the bat. Count it as speed work.')]},
+  {t:'After',items:[
+   E('Hip flexor + hamstring + adductor stretch',['5 min','5 min','5 min','5 min'],'Long exhales.')]}
+ ]},
+ speed:{name:'Speed & conditioning — cricket engine',short:'SPD',cls:'t-spd',tag:'Conditioning',dur:'40–50 min',adj:0,diet:'train',blocks:[
+  {t:'Warm-up',items:[
+   E('A-skips, B-skips, high knees',['2×20m each','2×20m each','2×20m each','2×20m each'],'Tall posture, quick contacts.')]},
+  {t:'Speed',items:[
+   E('Acceleration sprints 10m',['4 reps','6 reps','8 reps','5 reps'],'Full rest. From batting stance or keeper crouch.'),
+   E('22-yard shuttles (run-2s / run-3s)',['4 reps · 90s rest','6 reps · 75s rest','8 reps · 60s rest','5 reps · 90s'],'Low turns. This is the batter\'s real fitness test.'),
+   E('Keeper shuffle + drop-step reaction',['3×15s','4×20s','5×20s','3×15s'],'Partner points or use random calls.')]},
+  {t:'Engine',items:[
+   E('Repeated sprints 20m on 30s',['—','6 reps','10 reps','6 reps'],'Simulates a long partnership.'),
+   E('Zone 2 bike / incline walk',['20 min','15 min','10 min','10 min'],'Nasal breathing pace. Fat-loss friendly, low cost.')]},
+  {t:'Mobility',items:[
+   E('Couch stretch + deep squat hold',['2×45s each','2×45s each','2×45s each','2×45s each'],'')]}
+ ]},
+ skills:{name:'Skills + Zone 2 (non-match weekend)',short:'SKL',cls:'t-skl',tag:'Skills',dur:'60–75 min',adj:0,diet:'train',blocks:[
+  {t:'Zone 2',items:[
+   E('Zone 2 incline walk / bike / easy jog',['40 min','45 min','35 min','30 min'],'Conversational pace. Big lever for fat loss.')]},
+  {t:'Keeper & batting skills',items:[
+   E('Glove work: tennis-ball rebound wall',['10 min','10 min','15 min','10 min'],'Soft hands, eyes on the ball into gloves.'),
+   E('Shadow batting / throwdowns',['10 min','10 min','15 min','10 min'],'Footwork patterns, head over the ball.')]},
+  {t:'Mobility',items:[
+   E('Full-body mobility flow',['15 min','15 min','15 min','15 min'],'Hips, T-spine, ankles, shoulder within pain-free range.')]}
+ ]},
+ match:{name:'Match day',short:'MATCH',cls:'t-mat',tag:'Match',dur:'Game',adj:450,diet:'match',stats:true,blocks:[
+  {t:'Pre-match',items:[
+   E('Breakfast 3h before (carbs + protein, low fat)',['✓','✓','✓','✓'],'See Diet → Match day.'),
+   E('Dynamic warm-up + 3×20m strides',['15 min','15 min','15 min','15 min'],''),
+   E('Keeper warm-up takes + 2 dives each side',['5 min','5 min','5 min','5 min'],'')]},
+  {t:'During',items:[
+   E('500ml fluid + electrolytes every drinks break',['✓','✓','✓','✓'],'Dallas heat from April: add salt.'),
+   E('Innings-break fuel (banana, dates, PB sandwich)',['✓','✓','✓','✓'],'')]},
+  {t:'After',items:[
+   E('40g protein within 1 hour',['✓','✓','✓','✓'],'Shake is easiest.'),
+   E('10-min cool-down walk + stretch',['✓','✓','✓','✓'],'')]}
+ ]},
+ primer:{name:'Pre-match primer (day before)',short:'PRI',cls:'t-pri',tag:'Primer',dur:'25–30 min',adj:150,diet:'cricket',blocks:[
+  {t:'Stay sharp, not tired',items:[
+   E('Mobility flow',['10 min','10 min','10 min','10 min'],''),
+   E('Pogo hops + 3 low box jumps',['2×10 + 3','2×10 + 3','2×10 + 3','2×10 + 3'],''),
+   E('Strides 30m at 80%',['4 reps','4 reps','4 reps','4 reps'],''),
+   E('Light med-ball rotational throws',['2×4/side','2×4/side','2×4/side','2×4/side'],'Crisp, nowhere near fatigue.'),
+   E('Carb up at dinner, no alcohol',['✓','✓','✓','✓'],'')]}
+ ]},
+ recovery:{name:'Recovery (day after match)',short:'REC',cls:'t-rec',tag:'Recovery',dur:'30–40 min',adj:-150,diet:'rest',blocks:[
+  {t:'Flush',items:[
+   E('Easy walk or bike',['20–30 min','20–30 min','20–30 min','20–30 min'],'Keep it easy.'),
+   E('Mobility: hips, hamstrings, adductors, T-spine',['15 min','15 min','15 min','15 min'],''),
+   E('Foam roll quads / calves / lats',['5 min','5 min','5 min','5 min'],'')]}
+ ]},
+ rest:{name:'Rest day — active',short:'REST',cls:'t-rst',tag:'Rest',dur:'—',adj:-250,diet:'rest',blocks:[
+  {t:'Keep moving',items:[
+   E('8–10k steps',['✓','✓','✓','✓'],'Walking is the quiet engine of a cut.'),
+   E('10-min mobility (hips + shoulder)',['✓','✓','✓','✓'],'')]}
+ ]}
+};
+var TYPE_ORDER = ['lowerA','upperB','powerC','cricket','speed','skills','match','primer','recovery','rest'];
+
+var DIET_CHECKS = [
+ ['cal','Calories within ~150 of target'],
+ ['pro','Protein ≥ 180 g'],
+ ['water','Water 3 L+ (4 L on cricket/match days)'],
+ ['veg','5+ servings vegetables / fruit'],
+ ['alc','No alcohol (or within the 3-drinks-a-week cap)'],
+ ['late','Kitchen closed 2h before bed'],
+ ['sleep','Slept 7h+'],
+ ['steps','8k+ steps']
+];
+
+/* ---------------- date helpers ---------------- */
+function pd(s){var a=s.split('-');return new Date(+a[0],a[1]-1,+a[2],12);}
+function fd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function addD(s,n){var d=pd(s);d.setDate(d.getDate()+n);return fd(d);}
+function diff(a,b){return Math.round((pd(b)-pd(a))/864e5);}
+function todayS(){return fd(new Date());}
+var DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function nice(s){var d=pd(s);return DN[d.getDay()]+', '+MN[d.getMonth()]+' '+d.getDate();}
+function short(s){var d=pd(s);return MN[d.getMonth()]+' '+d.getDate();}
+function inR(s,a,b){return s>=a&&s<=b;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+/* ---------------- state ---------------- */
+var DEFAULT = {v:1,updatedAt:0,profile:{startWeight:225,goalWeight:190,heightIn:70,age:44,sex:'M',activity:1.5,protein:195,confirmed:false,
+  matchesOn:true,firstMatch:'2026-12-05',matchEvery:14,cricket2:'none'},
+  weights:{},workouts:{},diet:{},overrides:{}};
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function merge(base,o){for(var k in o){if(o[k]&&typeof o[k]==='object'&&!Array.isArray(o[k])&&base[k]&&typeof base[k]==='object'){merge(base[k],o[k]);}else base[k]=o[k];}return base;}
+var S = clone(DEFAULT);
+var embedded = {};
+try{embedded = JSON.parse(document.getElementById('state').textContent||'{}');}catch(e){}
+merge(S,embedded);
+var local=null;
+try{local = JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(e){}
+var dirty=false;
+if(local && local.updatedAt && local.updatedAt > (S.updatedAt||0)){S = merge(clone(DEFAULT),local); dirty = true;}
+
+var ART=null, artTried=false, pubTimer=null, publishing=false, acted=false;
+function persistLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}}
+function save(){S.updatedAt=Date.now();persistLocal();dirty=true;acted=true;renderSync();
+  if(ART){clearTimeout(pubTimer);pubTimer=setTimeout(publish,2500);}}
+function buildDoc(){
+  var json = JSON.stringify(S).replace(/</g,'\\u003c');
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>'+esc(TITLE)+'</title>\n'+STYLE+'\n</head>\n<body>\n'+SHELL+'\n<script id="state" type="application/json">'+json+'<'+'/script>\n<script id="app">'+APP_SRC+'<'+'/script>\n</body>\n</html>\n';
+}
+function publish(){
+  if(!ART||publishing)return; publishing=true; renderSync('Saving…');
+  try{sessionStorage.setItem(LS_KEY+'-ui',JSON.stringify({tab:UI.tab,date:UI.date,y:window.scrollY}));}catch(e){}
+  Promise.resolve().then(function(){return ART.publish(buildDoc());}).then(function(){
+    publishing=false;dirty=false;renderSync();
+  },function(err){publishing=false;var c=(err&&(err.code||err.name||err.message))||'';
+    if(/not_granted|not_writer/.test(c)){ART=null;renderSync('Read-only · saved on this device');}
+    else renderSync();});
+}
+function renderSync(msg){
+  var el=document.getElementById('sync'); if(!el)return;
+  if(msg){el.textContent=msg;el.className='';return;}
+  if(!artTried){el.textContent='';return;}
+  if(!ART){el.className='';el.textContent=dirty?'Saved on this device':'';return;}
+  if(dirty){el.className='dirty';el.innerHTML='Unsaved <button class="pri" data-act="sync">Save</button>';}
+  else{el.className='';el.textContent='✓ Saved';}
+}
+
+/* ---------------- program logic ---------------- */
+function phaseOf(s){for(var i=0;i<PHASES.length;i++)if(inR(s,PHASES[i].start,PHASES[i].end))return PHASES[i];return s<START?PHASES[0]:PHASES[3];}
+function deloadOf(s){for(var i=0;i<DELOADS.length;i++)if(inR(s,DELOADS[i][0],DELOADS[i][1]))return DELOADS[i][2];return '';}
+function weekNo(s){var mon0='2026-11-30';return Math.floor(diff(mon0,s)/7)+1;}
+function isMatch(s){var p=S.profile;if(!p.matchesOn||!p.firstMatch)return false;if(s<p.firstMatch)return false;
+  return diff(p.firstMatch,s)%(+p.matchEvery||14)===0;}
+function baseType(s){
+  var dow=pd(s).getDay(), c2=S.profile.cricket2;
+  if(c2!=='none'&&DN[dow]===c2)return 'cricket';
+  return ({1:'lowerA',2:'cricket',3:'upperB',4:'speed',5:'powerC',6:'skills',0:'rest'})[dow];
+}
+function autoType(s){
+  if(isMatch(s))return 'match';
+  if(isMatch(addD(s,1)))return 'primer';
+  if(isMatch(addD(s,-1)))return 'recovery';
+  return baseType(s);
+}
+function dayType(s){if(s<START||s>END)return null;return S.overrides[s]||autoType(s);}
+function targetWeight(s){
+  if(s<=MILESTONES[0][0])return MILESTONES[0][1];
+  for(var i=1;i<MILESTONES.length;i++){var a=MILESTONES[i-1],b=MILESTONES[i];
+    if(s<=b[0]){var f=diff(a[0],s)/diff(a[0],b[0]);return a[1]+(b[1]-a[1])*f;}}
+  return MILESTONES[MILESTONES.length-1][1];
+}
+function wDates(){return Object.keys(S.weights).sort();}
+function avg7(s){var ks=wDates().filter(function(k){return k<=s&&k>addD(s,-7);});if(!ks.length)return null;
+  return ks.reduce(function(t,k){return t+S.weights[k];},0)/ks.length;}
+function latestW(s){var ks=wDates().filter(function(k){return k<=s;});return ks.length?S.weights[ks[ks.length-1]]:null;}
+function refWeight(s){return avg7(s)||latestW(s)||S.profile.startWeight;}
+function targets(s,type){
+  var p=S.profile, w=refWeight(s), kg=w/2.2046, cm=p.heightIn*2.54;
+  var bmr=10*kg+6.25*cm-5*p.age+(p.sex==='F'?-161:5);
+  var tdee=bmr*(+p.activity||1.5);
+  var ph=phaseOf(s), t=TEMPLATES[type||'rest'];
+  var kcal=Math.max(1800,Math.round((tdee-ph.deficit+t.adj)/10)*10);
+  var pro=+p.protein||195, fat=Math.round(w*0.3), carb=Math.max(80,Math.round((kcal-pro*4-fat*9)/4));
+  return {kcal:kcal,pro:pro,fat:fat,carb:carb,tdee:Math.round(tdee),deficit:ph.deficit};
+}
+function wLog(s){return S.workouts[s]||(S.workouts[s]={done:{},load:{},rpe:'',notes:'',complete:false,stats:{}});}
+function itemCount(type){return TEMPLATES[type].blocks.reduce(function(t,b){return t+b.items.length;},0);}
+function workoutDone(s){var w=S.workouts[s];if(!w)return false;if(w.complete)return true;
+  var t=dayType(s);if(!t)return false;var n=itemCount(t),d=0;for(var k in w.done)if(w.done[k])d++;return n>0&&d/n>=0.7;}
+function dietScore(s){var d=S.diet[s];if(!d||!d.c)return null;var n=0,any=false;DIET_CHECKS.forEach(function(c){if(d.c[c[0]])n++;if(c[0] in d.c)any=true;});
+  return any?Math.round(n/DIET_CHECKS.length*100):null;}
+function isTraining(t){return t&&t!=='rest';}
+
+/* ---------------- UI ---------------- */
+var UI={tab:'today',date:null};
+var TABS=[['today','Today'],['plan','Plan'],['diet','Diet'],['progress','Progress'],['setup','Setup']];
+function clampDate(s){return s;}
+function initUI(){
+  var t=todayS(); UI.date = t<START?START:(t>END?END:t);
+  var h=(location.hash||'').replace('#','');
+  if(TABS.some(function(x){return x[0]===h;}))UI.tab=h;
+  try{var u=JSON.parse(sessionStorage.getItem(LS_KEY+'-ui')||'null');if(u){UI.tab=u.tab||UI.tab;UI.date=u.date||UI.date;UI.y=u.y;sessionStorage.removeItem(LS_KEY+'-ui');}}catch(e){}
+}
+function toast(m){var el=document.getElementById('toast');el.textContent=m;el.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.add('hide');},1800);}
+function renderTabs(){document.getElementById('tabs').innerHTML=TABS.map(function(t){return '<button data-tab="'+t[0]+'" class="'+(UI.tab===t[0]?'on':'')+'">'+t[1]+'</button>';}).join('');}
+function render(){renderTabs();var v=document.getElementById('view');
+  v.innerHTML=({today:vToday,plan:vPlan,diet:vDiet,progress:vProgress,setup:vSetup})[UI.tab]();renderSync();}
+function go(tab){UI.tab=tab;try{history.replaceState(null,'','#'+tab);}catch(e){}render();window.scrollTo(0,0);}
+
+function statusLine(s){
+  var a=avg7(s), tw=targetWeight(s);
+  if(a==null)return '<span class="mut">Log a weigh-in to see where you stand.</span>';
+  var d=a-tw;
+  if(d<=0.5)return '<span class="pill g">On track</span> <span class="sm mut">'+Math.abs(d).toFixed(1)+' lb '+(d<=0?'ahead of':'off')+' target line</span>';
+  if(d<=2.5)return '<span class="pill y">Slightly behind</span> <span class="sm mut">'+d.toFixed(1)+' lb above target line</span>';
+  return '<span class="pill" style="background:rgba(255,93,93,.18);color:var(--bad)">Behind</span> <span class="sm mut">'+d.toFixed(1)+' lb above target line</span>';
+}
+
+function vToday(){
+  var s=UI.date, t=dayType(s), ph=phaseOf(s), dl=deloadOf(s), p=S.profile;
+  var h='';
+  if(!p.confirmed)h+='<div class="banner"><b>Set your height and age</b> in <a href="#setup" data-tab="setup" style="color:var(--org)">Setup</a> so calorie targets are accurate. Defaults are 5′10″ and 44.</div>';
+  if(todayS()<START&&s===START)h+='<div class="banner">Program starts <b>Tue, Dec 1</b> — '+diff(todayS(),START)+' days to go. Log a baseline weigh-in now if you like.</div>';
+  h+='<div class="datebar"><button data-act="day" data-n="-1">‹</button><div class="d">'+nice(s)+'<div class="sm mut">Week '+weekNo(s)+' · '+ph.name+(dl?' · <span class="org">'+dl+'</span>':'')+'</div></div><button data-act="day" data-n="1">›</button></div>';
+  h+='<div class="row" style="justify-content:center;margin:-4px 0 10px"><button class="ghost sm" data-act="gotoday">Today</button></div>';
+  // weight card
+  var w=S.weights[s], a=avg7(s), tw=targetWeight(s), cur=a||latestW(s);
+  h+='<div class="card"><div class="row sp"><h2>Weigh-in</h2><span class="sm mut">Target today: <b>'+tw.toFixed(1)+'</b> lb</span></div>'+
+   '<div class="row"><input type="number" step="0.1" inputmode="decimal" id="wIn" placeholder="lb" value="'+(w!=null?w:'')+'"><button class="pri" data-act="saveW">Save</button>'+(w!=null?'<button class="ghost" data-act="delW">Clear</button>':'')+'</div>'+
+   '<div class="grid" style="margin-top:10px"><div class="kpi"><div class="v">'+(a?a.toFixed(1):'—')+'</div><div class="l">7-day average</div></div>'+
+   '<div class="kpi"><div class="v">'+(cur?(p.startWeight-cur).toFixed(1):'0')+'</div><div class="l">lb lost</div></div>'+
+   '<div class="kpi"><div class="v">'+(cur?Math.max(0,cur-p.goalWeight).toFixed(1):(p.startWeight-p.goalWeight))+'</div><div class="l">lb to 190</div></div></div>'+
+   '<div style="margin-top:8px">'+statusLine(s)+'</div><div class="sm mut" style="margin-top:6px">Weigh daily, same time, after the bathroom, before food. Judge progress on the 7-day average.</div></div>';
+  // workout
+  if(!t){h+='<div class="card"><h2>Outside the program window</h2><p class="mut">The plan runs Dec 1, 2026 – Apr 27, 2027.</p></div>';return h;}
+  var T=TEMPLATES[t], L=S.workouts[s]||{done:{},load:{},stats:{}}, idx=0;
+  h+='<div class="card"><div class="row sp"><div><span class="pill '+(t==='match'?'o':'')+'">'+T.tag+'</span> <span class="sm mut">'+T.dur+'</span></div>'+
+   '<select data-f="override">'+TYPE_ORDER.map(function(k){return '<option value="'+k+'"'+(k===t?' selected':'')+'>'+TEMPLATES[k].name+'</option>';}).join('')+'</select></div>'+
+   '<h2 style="margin-top:8px">'+T.name+(S.overrides[s]?' <span class="sm mut">(changed)</span>':'')+'</h2>';
+  if(dl&&T.tag==='Strength')h+='<div class="banner" style="margin:6px 0">'+dl+' week: drop one set from each lift and use ~70% of last week\'s loads.</div>';
+  if(t==='cricket'&&S.profile.cricket2!=='none'&&DN[pd(s).getDay()]===S.profile.cricket2&&baseType(s)==='cricket'&&pd(s).getDay()===4)
+    h+='<div class="sm mut">2nd cricket session replaces Thursday speed work — the running-between-wickets block covers it.</div>';
+  T.blocks.forEach(function(b){h+='<h3>'+b.t+'</h3>';b.items.forEach(function(e){var i=idx++,dn=!!(L.done&&L.done[i]);
+    h+='<div class="ex'+(dn?' done':'')+'"><input type="checkbox" data-f="ex" data-i="'+i+'"'+(dn?' checked':'')+'><div class="nm">'+esc(e.n)+'</div><div class="rx">'+esc(e.rx[ph.k])+'</div>'+
+     (e.c?'<div class="cue">'+esc(e.c)+'</div>':'')+
+     (e.load?'<div class="ld"><input data-f="load" data-i="'+i+'" placeholder="load × reps e.g. 185×5" value="'+esc(L.load&&L.load[i]||'')+'"></div>':'')+'</div>';});});
+  if(T.stats){var st=L.stats||{};
+    h+='<h3>Match stats</h3><div class="grid">'+[['runs','Runs'],['balls','Balls faced'],['catches','Catches'],['stumpings','Stumpings'],['byes','Byes conceded']].map(function(f){
+      return '<label class="sm mut">'+f[1]+'<br><input type="number" data-f="stat" data-k="'+f[0]+'" value="'+esc(st[f[0]]||'')+'"></label>';}).join('')+
+     '</div><label class="sm mut" style="display:block;margin-top:8px">How out / notes<br><input style="width:100%" data-f="stat" data-k="how" value="'+esc(st.how||'')+'"></label>';}
+  h+='<h3>Session</h3><div class="row"><label class="sm mut">Effort (RPE) <select data-f="rpe"><option value="">—</option>'+[5,6,7,8,9,10].map(function(r){return '<option'+(String(L.rpe)===String(r)?' selected':'')+'>'+r+'</option>';}).join('')+'</select></label>'+
+   '<label class="sm" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-f="complete" style="width:20px;height:20px;accent-color:var(--org)"'+(L.complete?' checked':'')+'> Session complete</label></div>'+
+   '<textarea data-f="wnotes" placeholder="Notes: how the shoulder felt, keeper hands, energy…" style="margin-top:8px">'+esc(L.notes||'')+'</textarea>'+
+   '<div class="sm '+(workoutDone(s)?'okc':'mut')+'" style="margin-top:6px">'+(workoutDone(s)?'✓ Counted as done':'Tick 70% of items or mark complete to count it')+'</div></div>';
+  // diet
+  var tg=targets(s,t), D=S.diet[s]||{c:{}}, sc=dietScore(s);
+  h+='<div class="card"><div class="row sp"><h2>Diet</h2><span class="score '+(sc==null?'mut':sc>=75?'okc':sc>=50?'warnc':'badc')+'">'+(sc==null?'—':sc+'%')+'</span></div>'+
+   '<div class="grid"><div class="kpi"><div class="v">'+tg.kcal+'</div><div class="l">kcal · '+dietLabel(T.diet)+'</div></div><div class="kpi"><div class="v">'+tg.pro+'g</div><div class="l">protein</div></div><div class="kpi"><div class="v">'+tg.carb+'g</div><div class="l">carbs</div></div><div class="kpi"><div class="v">'+tg.fat+'g</div><div class="l">fat</div></div></div>'+
+   '<div class="row" style="margin:10px 0 4px"><label class="sm mut">Calories eaten <input type="number" data-f="kcal" value="'+esc(D.kcal||'')+'"></label><label class="sm mut">Protein g <input type="number" data-f="prot" value="'+esc(D.prot||'')+'"></label></div>';
+  DIET_CHECKS.forEach(function(c){h+='<label class="chk"><input type="checkbox" data-f="dc" data-k="'+c[0]+'"'+(D.c&&D.c[c[0]]?' checked':'')+'><span>'+c[1]+'</span></label>';});
+  h+='<div class="sm mut" style="margin-top:6px">Meal ideas for a '+dietLabel(T.diet).toLowerCase()+' are on the <a href="#diet" data-tab="diet" style="color:var(--org)">Diet</a> tab.</div></div>';
+  return h;
+}
+function dietLabel(g){return ({train:'Training day',cricket:'Cricket day',match:'Match day',rest:'Rest day'})[g];}
+
+function vPlan(){
+  var h='<div class="card"><h2>The program</h2><p class="sm">21 weeks, Dec 1 → Apr 27. 225 → 190 lb is about 1.7 lb a week — fast but doable from this starting point if adherence stays high. The plan front-loads the deficit before the league starts in mid-March, then eases it so you can perform.</p>'+
+   '<h3>Weekly rhythm</h3><ul class="tight sm"><li><b>Mon</b> Strength A — lower body + keeper durability</li><li><b>Tue</b> Cricket session (nets + keeping)</li><li><b>Wed</b> Strength B — upper body, shoulder-safe + batting power</li><li><b>Thu</b> Speed & conditioning (or 2nd cricket session — set in Setup)</li><li><b>Fri</b> Strength C — full-body power · becomes a <b>primer</b> before a match</li><li><b>Sat</b> Match (alternate weekends) · otherwise Skills + Zone 2</li><li><b>Sun</b> Rest · becomes <b>recovery</b> after a match</li></ul>'+
+   '<p class="sm mut">Tap any day to open it. Use the session menu on that day to swap anything (e.g. a match moved to Sunday).</p>'+
+   '<div class="legend">'+[['t-str','Strength'],['t-cri','Cricket'],['t-spd','Speed'],['t-skl','Skills'],['t-mat','Match'],['t-pri','Primer'],['t-rec','Recovery'],['t-rst','Rest']].map(function(x){return '<span class="'+x[0]+'">'+x[1]+'</span>';}).join('')+'</div></div>';
+  var t=todayS(), wk='2026-11-30';
+  h+='<div class="card">';
+  var lastPh=-1;
+  while(wk<=END){
+    var ph=phaseOf(wk<START?START:wk);
+    if(ph.k!==lastPh){lastPh=ph.k;var ms=MILESTONES[ph.k+1];
+      h+='<div class="phase"><b>Phase '+(ph.k+1)+' · '+ph.name+'</b><div class="sm mut">'+short(ph.start)+' – '+short(ph.end)+' · target '+ms[1]+' lb by '+short(ms[0])+' · deficit ~'+ph.deficit+' kcal/day</div><div class="sm">'+ph.focus+'</div></div>';}
+    var dl=deloadOf(addD(wk,3));
+    h+='<div class="wk"><div class="lab">Wk '+weekNo(wk)+'<br>'+short(wk)+(dl?'<br><span class="org">'+(dl.indexOf('taper')>=0?'Taper':'Deload')+'</span>':'')+'</div>';
+    for(var i=0;i<7;i++){var s=addD(wk,i),ty=dayType(s),d=pd(s);
+      if(!ty){h+='<div class="cell out t-rst"><span class="dn">'+DN[d.getDay()][0]+' '+d.getDate()+'</span></div>';continue;}
+      var T=TEMPLATES[ty];
+      h+='<div class="cell '+T.cls+(s===t?' today':'')+'" data-act="open" data-d="'+s+'">'+(workoutDone(s)?'<i class="dot"></i>':'')+'<span class="dn">'+DN[d.getDay()][0]+' '+d.getDate()+'</span>'+T.short+(s===SEASON?'<span class="dn">🏏 league</span>':'')+'</div>';}
+    h+='</div>';
+    wk=addD(wk,7);
+  }
+  h+='</div>';
+  h+='<div class="card"><h2>Progression rules</h2><ul class="tight sm">'+
+   '<li>Add load when you hit the top of the rep range with 2 reps left in the tank. Log the top set in the box under each lift.</li>'+
+   '<li>In a calorie deficit, holding your strength counts as a win. If a lift drops two sessions running, skip a set and check your sleep and protein.</li>'+
+   '<li>Shoulder: pressing stays on the landmine and neutral-grip dumbbells. No behind-the-neck work or heavy barbell overhead. Stay in a range that doesn\'t hurt.</li>'+
+   '<li>Keeper focus: deep squat, adductors (Copenhagen), lateral first step, safe diving. Batter focus: rotational power, grip, repeated 22-yard sprints.</li>'+
+   '<li>In-season, a match counts as the hardest session of the week. Never put heavy legs within 48h of a game.</li>'+
+   '<li>If you are tired going into a session, keep the main lift and drop the accessories.</li></ul></div>';
+  return h;
+}
+
+function vDiet(){
+  var s=UI.date, t=dayType(s)||'rest';
+  var h='<div class="card"><h2>Daily targets</h2><p class="sm mut">Calculated from your 7-day average weight, height, age and activity (Mifflin-St Jeor) minus the phase deficit, then adjusted by day type. They update as you lose weight.</p><table><tr><th>Day type</th><th>kcal</th><th>P</th><th>C</th><th>F</th></tr>';
+  [['lowerA','Training day'],['cricket','Cricket / primer day'],['match','Match day'],['rest','Rest day'],['recovery','Recovery day']].forEach(function(x){var g=targets(s,x[0]);
+    h+='<tr><td>'+x[1]+'</td><td>'+g.kcal+'</td><td>'+g.pro+'</td><td>'+g.carb+'</td><td>'+g.fat+'</td></tr>';});
+  var g0=targets(s,'lowerA');
+  h+='</table><div class="sm mut" style="margin-top:6px">Phase '+(phaseOf(s).k+1)+' ('+phaseOf(s).name+'): estimated maintenance ≈ '+g0.tdee+' kcal, deficit ~'+g0.deficit+'. Floor: never below 1,800.</div></div>';
+  var tabs=[['train','Training'],['cricket','Cricket'],['match','Match'],['rest','Rest']], cur=UI.dietTab||TEMPLATES[t].diet;
+  h+='<div class="card"><div class="row sp"><h2>Meal plan</h2><div class="seg">'+tabs.map(function(x){return '<button data-act="dtab" data-k="'+x[0]+'" class="'+(cur===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+mealPlan(cur)+'</div>';
+  h+='<div class="card"><h2>Rules that do the heavy lifting</h2><ul class="tight sm">'+
+   '<li><b>Protein first:</b> 40–50 g at each of 4 meals. That keeps muscle on during a cut and keeps hunger down.</li>'+
+   '<li><b>Plate:</b> half vegetables, a quarter protein, a quarter carbs (more carbs on cricket and match days, fewer on rest days).</li>'+
+   '<li><b>Cooking oil:</b> measure it, 1 tsp per person per dish. Hidden oil and ghee are where Indian home cooking adds up.</li>'+
+   '<li><b>Rice / roti:</b> measure with a cup — ¾ cup cooked rice or 2 small rotis per meal on training days.</li>'+
+   '<li><b>Alcohol:</b> 3 drinks a week at most, none the night before a match. Prefer light beer or spirits with soda.</li>'+
+   '<li><b>Kitchen closes</b> 2 hours before bed. If you get hungry late, have Greek yogurt or a casein shake.</li>'+
+   '<li><b>Water:</b> 3 L a day as the baseline, 4 L+ with electrolytes on cricket and match days.</li>'+
+   '<li><b>Weekly flex meal:</b> one meal out a week, no tracking, but eat protein first and stop at one plate.</li></ul>'+
+   '<h3>December holidays</h3><ul class="tight sm"><li>Aim to hold weight over Dec 21–27 rather than lose. That counts as a win.</li><li>Have a high-protein breakfast before a party, then take one plate, and dessert or drinks but not both.</li><li>Get 10k steps on holiday days.</li></ul>'+
+   '<h3>Staples to keep stocked</h3><p class="sm">Chicken breast/thigh, eggs + liquid egg whites, fish (rohu, salmon, tilapia), low-fat paneer or tofu, Greek yogurt (0–2%), whey, masoor/moong dal, chana, basmati, whole-wheat atta, oats, potatoes, frozen veg mixes, salad kits, cucumbers, berries, bananas, dates, roasted chana, electrolyte packets.</p>'+
+   '<h3>Supplements (basic, optional)</h3><p class="sm">Creatine monohydrate 5 g a day, whey to reach your protein target, and electrolytes on hot cricket days. Check with your doctor before adding anything else.</p></div>';
+  return h;
+}
+function meal(title,p,opts){return '<div class="meal"><div class="h"><span>'+title+'</span><span class="org">~'+p+'g P</span></div><ul>'+opts.map(function(o){return '<li>'+o+'</li>';}).join('')+'</ul></div>';}
+function mealPlan(k){
+  if(k==='train')return '<p class="sm mut">Strength, speed and skills days. Put the carbs around the session.</p>'+
+   meal('Breakfast',45,['Masala omelette: 3 eggs + 1 cup egg whites, onion, tomato, chilli · 1 roti or toast · fruit','Greek yogurt 250 g + 1 scoop whey + berries + 30 g oats'])+
+   meal('Lunch',45,['Chicken tikka / tandoori 200 g · ¾ cup basmati or 2 roti · big salad + raita','Burrito bowl: double chicken, fajita veg, half rice, salsa, lettuce (skip cheese and sour cream)'])+
+   meal('Pre / post workout',40,['Whey shake + banana','Greek yogurt 200 g + 1 tsp honey'])+
+   meal('Dinner',45,['Fish jhol (rohu / salmon 200 g, 1 tsp oil) · 1 cup dal · 2 cups sabzi · ½ cup rice','Low-fat paneer or tofu bhurji 150 g + veg · 1 roti · cucumber salad'])+
+   '<p class="sm mut">Snack if needed: 30 g roasted chana, cucumber and carrots, or 1 apple.</p>';
+  if(k==='cricket')return '<p class="sm mut">Cricket sessions and the primer day before a match. Same base as a training day plus 40–60 g carbs.</p>'+
+   meal('Breakfast',45,['Oats 60 g cooked in milk + whey + banana','3 eggs + 1 cup whites · 2 toast · orange'])+
+   meal('Lunch',45,['Chicken curry 200 g (light oil) · 1 cup rice · salad','Turkey or chicken wrap ×2 + fruit'])+
+   meal('Pre-session (60–90 min before)',20,['Banana + 3 dates + 200 g Greek yogurt','PB toast (1 tbsp) + whey'])+
+   meal('Dinner (post-session)',50,['Grilled fish or chicken 220 g · 1 cup rice or potatoes · dal · veg','Egg curry (4 eggs, 2 whites) · 2 roti · sabzi'])+
+   '<p class="sm mut">Night before a match: lean on rice or potatoes at dinner, no alcohol, nothing deep-fried.</p>';
+  if(k==='match')return '<p class="sm mut">Fuel to perform. This is the one day the cut takes a back seat.</p>'+
+   meal('Breakfast (3h before)',40,['Poha or upma (1.5 cups) + 3 egg whites + 2 eggs','Oats + whey + banana + honey · coffee'])+
+   meal('During play',0,['500 ml fluid + electrolytes at every drinks break','Innings break: banana + PB sandwich, or dates + a granola bar','Avoid heavy, fried or greasy food during the game'])+
+   meal('Within 1h after',40,['Whey shake + fruit','Chocolate milk 500 ml + 1 scoop whey'])+
+   meal('Dinner',50,['Chicken biryani portion (1.5 cups) + raita + salad, eaten mindfully','Grilled chicken/fish 220 g + rice + veg'])+
+   '<p class="sm mut">Team food after the game: protein first, one plate, then stop. A beer counts toward the 3-a-week cap.</p>';
+  return '<p class="sm mut">Rest and recovery days. Keep protein the same and cut back on carbs.</p>'+
+   meal('Breakfast',45,['Egg-white veggie omelette (1 cup whites + 2 eggs) · fruit','Greek yogurt 250 g + whey + berries'])+
+   meal('Lunch',45,['Big salad: 200 g grilled chicken, chickpeas ½ cup, veg, lemon-yogurt dressing','Chicken or fish tikka + kachumber + 1 roti'])+
+   meal('Snack',30,['Protein shake or 200 g Greek yogurt','Roasted chana 30 g + 1 boiled egg'])+
+   meal('Dinner',45,['Fish or chicken 200 g · double sabzi · dal ½ cup · no rice','Tofu / paneer stir-fry with lots of veg · cauliflower rice']);
+}
+
+function chart(){
+  var W=340,H=190,pl=30,pr=8,pt=10,pb=22, x0=pd(START),x1=pd(END), span=x1-x0;
+  var ks=wDates().filter(function(k){return k>=addD(START,-21)&&k<=END;});
+  var ys=ks.map(function(k){return S.weights[k];}).concat([226,188]);
+  var ymin=Math.floor(Math.min.apply(null,ys)-1), ymax=Math.ceil(Math.max.apply(null,ys)+1);
+  function X(s){return pl+Math.max(0,Math.min(1,(pd(s)-x0)/span))*(W-pl-pr);}
+  function Y(v){return pt+(ymax-v)/(ymax-ymin)*(H-pt-pb);}
+  var g='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Weight vs target">';
+  for(var v=Math.ceil(ymin/5)*5;v<=ymax;v+=5)g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#2a4378" stroke-width="0.6"/><text x="'+(pl-4)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v+'</text>';
+  ['2026-12-01','2027-01-01','2027-02-01','2027-03-01','2027-04-01'].forEach(function(m){g+='<text x="'+X(m)+'" y="'+(H-6)+'" text-anchor="middle">'+MN[pd(m).getMonth()]+'</text>';});
+  g+='<line x1="'+X(SEASON)+'" x2="'+X(SEASON)+'" y1="'+pt+'" y2="'+(H-pb)+'" stroke="#ff7a1a" stroke-dasharray="3 3" stroke-width="0.8"/><text x="'+(X(SEASON)+3)+'" y="'+(pt+8)+'" style="fill:#ffa45c">League</text>';
+  g+='<polyline fill="none" stroke="#9fb0d0" stroke-dasharray="4 3" stroke-width="1.2" points="'+MILESTONES.map(function(m){return X(m[0])+','+Y(m[1]);}).join(' ')+'"/>';
+  MILESTONES.forEach(function(m){g+='<circle cx="'+X(m[0])+'" cy="'+Y(m[1])+'" r="2.2" fill="#9fb0d0"/>';});
+  ks.forEach(function(k){if(k>=START)g+='<circle cx="'+X(k)+'" cy="'+Y(S.weights[k])+'" r="1.8" fill="#9fb0d0" opacity=".55"/>';});
+  var av=ks.filter(function(k){return k>=START;}).map(function(k){return X(k)+','+Y(avg7(k));});
+  if(av.length>1)g+='<polyline fill="none" stroke="#ff7a1a" stroke-width="2.2" stroke-linejoin="round" points="'+av.join(' ')+'"/>';
+  else if(av.length===1)g+='<circle cx="'+av[0].split(',')[0]+'" cy="'+av[0].split(',')[1]+'" r="3" fill="#ff7a1a"/>';
+  return g+'</svg><div class="legend sm" style="margin-top:4px"><span style="color:#ff7a1a">━ 7-day avg</span><span class="mut">┅ target line</span><span class="mut">• daily weigh-ins</span></div>';
+}
+function weekRows(){
+  var rows=[], wk='2026-11-30', t=todayS();
+  while(wk<=END&&wk<=t){var planned=0,done=0,sc=[],last=null;
+    for(var i=0;i<7;i++){var s=addD(wk,i),ty=dayType(s);if(!ty||s>t)continue;if(isTraining(ty)){planned++;if(workoutDone(s))done++;}
+      var d=dietScore(s);if(d!=null)sc.push(d);}
+    var end=addD(wk,6), a=avg7(end>t?t:end);
+    rows.push({wk:weekNo(wk),start:wk,avg:a,target:targetWeight(end>END?END:end),planned:planned,done:done,diet:sc.length?Math.round(sc.reduce(function(x,y){return x+y;},0)/sc.length):null,logged:sc.length});
+    wk=addD(wk,7);}
+  return rows;
+}
+function projection(){
+  var t=todayS(), ks=wDates().filter(function(k){return k>=addD(t,-28)&&k<=t;});
+  if(ks.length<6)return null;
+  var a=avg7(ks[ks.length-1]), b=avg7(addD(ks[ks.length-1],-14));
+  if(a==null||b==null)return null;
+  var rate=(b-a)/2; var weeksLeft=Math.max(0,diff(ks[ks.length-1],END)/7);
+  return {rate:rate,landing:a-rate*weeksLeft};
+}
+function vProgress(){
+  var t=todayS(), ref=refDay(), p=S.profile, a=avg7(ref)||latestW(ref), pj=projection(), rows=weekRows();
+  var wkDone=0,wkPlan=0;rows.forEach(function(r){wkDone+=r.done;wkPlan+=r.planned;});
+  var ds=[];for(var i=0;i<7;i++){var d=dietScore(addD(ref,-i));if(d!=null)ds.push(d);}
+  var d7=ds.length?Math.round(ds.reduce(function(x,y){return x+y;},0)/ds.length):null;
+  var lost=a?p.startWeight-a:0, pct=Math.max(0,Math.min(100,lost/(p.startWeight-p.goalWeight)*100));
+  var h='<div class="card"><h2>Progress</h2><div class="bar" style="margin:6px 0 4px"><i style="width:'+pct.toFixed(0)+'%"></i></div><div class="sm mut">'+lost.toFixed(1)+' of '+(p.startWeight-p.goalWeight)+' lb · '+Math.max(0,diff(t,END))+' days left · league starts in '+Math.max(0,diff(t,SEASON))+' days</div>'+
+   '<div class="grid" style="margin-top:10px"><div class="kpi"><div class="v">'+(a?a.toFixed(1):'—')+'</div><div class="l">Current (7-day avg)</div></div>'+
+   '<div class="kpi"><div class="v">'+targetWeight(ref).toFixed(1)+'</div><div class="l">Target line today</div></div>'+
+   '<div class="kpi"><div class="v">'+(pj?pj.rate.toFixed(1):'—')+'</div><div class="l">lb/week (last 2 wks)</div></div>'+
+   '<div class="kpi"><div class="v">'+(pj?pj.landing.toFixed(0):'—')+'</div><div class="l">Projected Apr 27</div></div>'+
+   '<div class="kpi"><div class="v">'+wkDone+'/'+wkPlan+'</div><div class="l">Sessions done</div></div>'+
+   '<div class="kpi"><div class="v">'+(d7==null?'—':d7+'%')+'</div><div class="l">Diet adherence (7d)</div></div></div>'+
+   '<div style="margin-top:12px">'+chart()+'</div></div>';
+  h+='<div class="card"><h2>Weekly log</h2>'+(rows.length?'<table><tr><th>Week</th><th>Avg</th><th>Target</th><th>Sessions</th><th>Diet</th></tr>'+rows.slice().reverse().map(function(r){
+    var c=r.avg==null?'':(r.avg<=r.target+0.5?'okc':r.avg<=r.target+2.5?'warnc':'badc');
+    return '<tr><td>Wk '+r.wk+' <span class="mut sm">'+short(r.start)+'</span></td><td class="'+c+'">'+(r.avg?r.avg.toFixed(1):'—')+'</td><td>'+r.target.toFixed(1)+'</td><td>'+r.done+'/'+r.planned+'</td><td>'+(r.diet==null?'—':r.diet+'%')+'</td></tr>';}).join('')+'</table>':'<p class="mut sm">Weekly rows appear once the program starts on Dec 1.</p>')+'</div>';
+  h+='<div class="card"><h2>Weigh-in history</h2>'+weighList()+'</div>';
+  h+='<div class="card"><h2>Report</h2><p class="sm mut">A plain-text summary to send to a trainer or teammate.</p><pre class="rep" id="rep">'+esc(report())+'</pre><div class="row"><button data-act="copyrep">Copy report</button></div></div>';
+  return h;
+}
+function weighList(){var ks=wDates().reverse();if(!ks.length)return '<p class="mut sm">No weigh-ins yet.</p>';
+  return '<table><tr><th>Date</th><th>Weight</th><th>7-day avg</th><th>Target</th></tr>'+ks.slice(0,60).map(function(k){var av=avg7(k);
+    return '<tr><td>'+nice(k)+'</td><td>'+S.weights[k].toFixed(1)+'</td><td>'+(av?av.toFixed(1):'—')+'</td><td>'+targetWeight(k).toFixed(1)+'</td></tr>';}).join('')+'</table>'+(ks.length>60?'<p class="sm mut">Showing the latest 60.</p>':'');}
+function refDay(){var t=todayS();return t<START?START:(t>END?END:t);}
+function report(){
+  var t=todayS(), ref=refDay(), a=avg7(ref), p=S.profile, pj=projection(), rows=weekRows().slice(-4);
+  var L=['SEASON CUT — '+nice(t),'Goal: '+p.startWeight+' → '+p.goalWeight+' lb by Apr 27, 2027 · League starts mid-March','Phase: '+phaseOf(ref).name+' (week '+weekNo(ref)+')',
+   'Current 7-day avg: '+(a?a.toFixed(1):'n/a')+' lb · target line: '+targetWeight(ref).toFixed(1)+' lb',
+   'Rate (last 2 weeks): '+(pj?pj.rate.toFixed(2)+' lb/wk · projected landing '+pj.landing.toFixed(1)+' lb':'not enough data'),'','Last 4 weeks:'];
+  rows.forEach(function(r){L.push('  Wk '+r.wk+' ('+short(r.start)+'): avg '+(r.avg?r.avg.toFixed(1):'—')+' / target '+r.target.toFixed(1)+' · sessions '+r.done+'/'+r.planned+' · diet '+(r.diet==null?'—':r.diet+'%'));});
+  var lifts={};Object.keys(S.workouts).sort().forEach(function(s){var w=S.workouts[s],ty=dayType(s);if(!ty||!w.load)return;var idx=0;
+    TEMPLATES[ty].blocks.forEach(function(b){b.items.forEach(function(e){var v=w.load[idx++];if(v)lifts[e.n]=v+' ('+short(s)+')';});});});
+  var lk=Object.keys(lifts);if(lk.length){L.push('','Latest logged loads:');lk.forEach(function(k){L.push('  '+k+': '+lifts[k]);});}
+  var m=Object.keys(S.workouts).filter(function(s){return dayType(s)==='match'&&S.workouts[s].stats&&(S.workouts[s].stats.runs||S.workouts[s].stats.catches||S.workouts[s].stats.stumpings);}).sort();
+  if(m.length){var R=0,B=0,C=0,St=0;m.forEach(function(s){var x=S.workouts[s].stats;R+=+x.runs||0;B+=+x.balls||0;C+=+x.catches||0;St+=+x.stumpings||0;});
+    L.push('','Matches logged: '+m.length+' · runs '+R+(B?' (SR '+(R/B*100).toFixed(0)+')':'')+' · catches '+C+' · stumpings '+St);}
+  return L.join('\n');
+}
+
+function vSetup(){
+  var p=S.profile, hf=Math.floor(p.heightIn/12), hi=Math.round(p.heightIn%12);
+  var h='<div class="card"><h2>Your profile</h2><p class="sm mut">Used for the calorie targets.</p><div class="grid">'+
+   '<label class="sm mut">Height ft<br><input type="number" data-p="hft" value="'+hf+'"></label><label class="sm mut">Height in<br><input type="number" data-p="hin" value="'+hi+'"></label>'+
+   '<label class="sm mut">Age<br><input type="number" data-p="age" value="'+p.age+'"></label>'+
+   '<label class="sm mut">Sex<br><select data-p="sex"><option value="M"'+(p.sex==='M'?' selected':'')+'>Male</option><option value="F"'+(p.sex==='F'?' selected':'')+'>Female</option></select></label>'+
+   '<label class="sm mut">Start weight<br><input type="number" step="0.1" data-p="startWeight" value="'+p.startWeight+'"></label>'+
+   '<label class="sm mut">Protein g/day<br><input type="number" data-p="protein" value="'+p.protein+'"></label>'+
+   '<label class="sm mut">Activity factor<br><select data-p="activity">'+[[1.4,'1.4 · desk job, light'],[1.5,'1.5 · desk + 5–6 sessions'],[1.6,'1.6 · active job + training'],[1.7,'1.7 · very active']].map(function(o){return '<option value="'+o[0]+'"'+(+p.activity===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label></div>'+
+   '<div class="row" style="margin-top:10px"><button class="pri" data-act="confirm">'+(p.confirmed?'Saved':'Confirm profile')+'</button><span class="sm mut">Maintenance today ≈ '+targets(UI.date,'lowerA').tdee+' kcal</span></div></div>';
+  h+='<div class="card"><h2>Cricket schedule</h2>'+
+   '<label class="chk"><input type="checkbox" data-p="matchesOn"'+(p.matchesOn?' checked':'')+'><span>Matches every other weekend (adds a primer the day before and recovery the day after)</span></label>'+
+   '<div class="grid" style="margin-top:6px"><label class="sm mut">First match date<br><input type="date" data-p="firstMatch" value="'+p.firstMatch+'"></label>'+
+   '<label class="sm mut">Repeat every<br><select data-p="matchEvery">'+[[7,'Week'],[14,'2 weeks'],[21,'3 weeks']].map(function(o){return '<option value="'+o[0]+'"'+(+p.matchEvery===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label>'+
+   '<label class="sm mut">2nd cricket session<br><select data-p="cricket2">'+[['none','None (1 a week)'],['Thu','Thursday'],['Fri','Friday'],['Sat','Saturday'],['Sun','Sunday']].map(function(o){return '<option value="'+o[0]+'"'+(p.cricket2===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label></div>'+
+   '<p class="sm mut">Tuesday is the default net session. For a one-off change (a match moved to Sunday, a washed-out net), open that day and use its session menu. '+Object.keys(S.overrides).length+' day(s) changed.</p>'+
+   (Object.keys(S.overrides).length?'<button class="ghost" data-act="clearOv">Undo all day changes</button>':'')+'</div>';
+  h+='<div class="card"><h2>Backup</h2><p class="sm mut">Your logs save into this page. Keep an occasional backup file anyway.</p><div class="row">'+
+   '<button data-act="export">Download backup (.json)</button><button data-act="csv">Download weights (.csv)</button>'+
+   '<label class="btn">Restore backup<input type="file" accept=".json,application/json" data-f="import" class="hide"></label></div>'+
+   '<div class="row" style="margin-top:12px"><button class="ghost" data-act="copyjson">Copy backup to clipboard</button><button class="ghost badc" data-act="reset">Reset all data…</button></div><div id="resetbox"></div></div>';
+  return h;
+}
+
+/* ---------------- events ---------------- */
+function onClick(e){
+  var el=e.target.closest('[data-tab],[data-act]');if(!el)return;
+  if(el.dataset.tab){e.preventDefault();go(el.dataset.tab);return;}
+  var a=el.dataset.act;
+  if(a==='day'){UI.date=addD(UI.date,+el.dataset.n);if(UI.date<addD(START,-30))UI.date=addD(START,-30);if(UI.date>END)UI.date=END;render();}
+  else if(a==='gotoday'){UI.date=todayS();if(UI.date>END)UI.date=END;render();}
+  else if(a==='open'){UI.date=el.dataset.d;go('today');}
+  else if(a==='saveW'){var v=parseFloat(document.getElementById('wIn').value);if(!(v>80&&v<400)){toast('Enter a weight in lb');return;}
+    S.weights[UI.date]=Math.round(v*10)/10;save();render();toast('Weight saved');}
+  else if(a==='delW'){delete S.weights[UI.date];save();render();}
+  else if(a==='dtab'){UI.dietTab=el.dataset.k;render();}
+  else if(a==='sync'){clearTimeout(pubTimer);publish();}
+  else if(a==='confirm'){S.profile.confirmed=true;save();render();toast('Profile saved');}
+  else if(a==='clearOv'){S.overrides={};save();render();}
+  else if(a==='copyrep'){copy(report());}
+  else if(a==='copyjson'){copy(JSON.stringify(S));}
+  else if(a==='export'){dl('season-cut-backup-'+todayS()+'.json',JSON.stringify(S,null,1),'application/json');}
+  else if(a==='csv'){dl('season-cut-weights.csv','date,weight,avg7,target\n'+wDates().map(function(k){return k+','+S.weights[k]+','+(avg7(k)||'').toString().slice(0,6)+','+targetWeight(k).toFixed(1);}).join('\n'),'text/csv');}
+  else if(a==='reset'){document.getElementById('resetbox').innerHTML='<div class="banner" style="margin-top:10px">This deletes every log on this page. <button class="pri" data-act="reset2">Yes, reset</button> <button class="ghost" data-act="reset0">Cancel</button></div>';}
+  else if(a==='reset0'){document.getElementById('resetbox').innerHTML='';}
+  else if(a==='reset2'){S=clone(DEFAULT);save();render();toast('Reset');}
+}
+function copy(t){try{navigator.clipboard.writeText(t).then(function(){toast('Copied');},function(){toast('Copy blocked — select the text instead');});}catch(e){toast('Copy blocked');}}
+var DLS=null;
+function dl(name,data,mime){
+  if(!DLS){toast('Downloads unavailable here — use Copy');return;}
+  Promise.resolve().then(function(){return DLS.save({filename:name,data:data,mimeType:mime});}).then(function(){},function(){toast('Download cancelled');});
+}
+function onChange(e){
+  var el=e.target, f=el.dataset.f, pk=el.dataset.p, s=UI.date;
+  if(pk){var p=S.profile;
+    if(pk==='hft'||pk==='hin'){var ft=+document.querySelector('[data-p=hft]').value||0,inch=+document.querySelector('[data-p=hin]').value||0;if(ft*12+inch>48)p.heightIn=ft*12+inch;}
+    else if(pk==='matchesOn')p.matchesOn=el.checked;
+    else if(pk==='sex'||pk==='firstMatch'||pk==='cricket2')p[pk]=el.value;
+    else{var v=parseFloat(el.value);if(!isNaN(v))p[pk]=v;}
+    save();render();return;}
+  if(!f)return;
+  if(f==='import'){var file=el.files&&el.files[0];if(!file)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o||!o.profile)throw 0;S=merge(clone(DEFAULT),o);save();render();toast('Backup restored');}catch(x){toast('That file isn\'t a backup from this tracker');}};r.readAsText(file);return;}
+  if(f==='override'){if(el.value===autoType(s))delete S.overrides[s];else S.overrides[s]=el.value;
+    if(S.workouts[s]){S.workouts[s].done={};S.workouts[s].load={};}save();render();return;}
+  var w;
+  if(f==='ex'){w=wLog(s);w.done[el.dataset.i]=el.checked;}
+  else if(f==='load'){w=wLog(s);w.load[el.dataset.i]=el.value.trim();}
+  else if(f==='stat'){w=wLog(s);w.stats=w.stats||{};w.stats[el.dataset.k]=el.value.trim();}
+  else if(f==='rpe'){wLog(s).rpe=el.value;}
+  else if(f==='complete'){wLog(s).complete=el.checked;}
+  else if(f==='wnotes'){wLog(s).notes=el.value;}
+  else if(f==='dc'||f==='kcal'||f==='prot'){var D=S.diet[s]||(S.diet[s]={c:{}});D.c=D.c||{};
+    if(f==='dc')D.c[el.dataset.k]=el.checked;else D[f]=el.value;
+    if(f==='kcal'&&el.value){var tg=targets(s,dayType(s)||'rest');D.c.cal=Math.abs(+el.value-tg.kcal)<=150;}
+    if(f==='prot'&&el.value){D.c.pro=+el.value>=180;}
+    DIET_CHECKS.forEach(function(c){if(!(c[0] in D.c))D.c[c[0]]=false;});}
+  save();
+  var y=window.scrollY;render();window.scrollTo(0,y);
+}
+document.addEventListener('click',onClick);
+document.addEventListener('change',onChange);
+window.addEventListener('hashchange',function(){var h=location.hash.replace('#','');if(TABS.some(function(x){return x[0]===h;})&&h!==UI.tab){UI.tab=h;render();}});
+
+initUI();render();
+if(UI.y)setTimeout(function(){window.scrollTo(0,UI.y);},30);
+var attached=false, tries=0;
+function attach(){
+  if(attached)return;
+  if(window.claude&&typeof window.claude.use==='function'){attached=true;
+    window.claude.use('artifact').then(function(a){ART=a;artTried=true;renderSync();if(ART&&acted&&dirty){pubTimer=setTimeout(publish,1500);}},function(){artTried=true;renderSync();});
+    window.claude.use('downloads').then(function(d){DLS=d;},function(){});
+  }else if(++tries<12){setTimeout(attach,500);}else{artTried=true;renderSync();}
+}
+attach();
+window.__app={S:function(){return S;},dayType:dayType,targets:targets,buildDoc:buildDoc,targetWeight:targetWeight,report:report,UI:UI,render:render};
+})();
+</script>
+</body>
+</html>
